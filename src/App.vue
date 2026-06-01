@@ -1011,7 +1011,7 @@ function deleteScorer(player: { name: string; team: string }) {
           <span>{{ language === 'en' ? 'Data Privacy & Control' : language === 'es' ? 'Uso de Datos' : 'Uso de Dados & Privacidade' }}</span>
         </div>
         <p class="max-w-3xl mx-auto text-[11px] text-slate-400 leading-relaxed font-normal">{{ t.privacyDisclaimer }}</p>
-        <div class="mt-3.5 text-[9px] text-slate-400 font-mono">FIFA Cup Simulator 2026 • Local Persistence Storage • {{ language === 'en' ? 'All rights reserved' : 'Todos os direitos reservados' }}</div>
+        <div class="mt-3.5 text-[9px] text-slate-400 font-mono">FIFA Cup Simulator 2026 • Local Persistence Storage • {{ language === 'en' ? 'All rights reserved Otávio Rafael' : 'Todos os direitos reservados Otávio Rafael' }}</div>
       </div>
     </main>
 
