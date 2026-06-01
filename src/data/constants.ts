@@ -1,188 +1,848 @@
 import type { Team, Scorer, Language } from '../types'
 
 export const TEAMS: Record<string, Team> = {
-  USA: { name: 'EUA', flag: '🇺🇸', code: 'USA', ranking: 11 },
-  MEX: { name: 'México', flag: '🇲🇽', code: 'MEX', ranking: 15 },
-  CAN: { name: 'Canadá', flag: '🇨🇦', code: 'CAN', ranking: 40 },
-  BRA: { name: 'Brasil', flag: '🇧🇷', code: 'BRA', ranking: 5 },
-  ARG: { name: 'Argentina', flag: '🇦🇷', code: 'ARG', ranking: 1 },
-  FRA: { name: 'França', flag: '🇫🇷', code: 'FRA', ranking: 2 },
-  ENG: { name: 'Inglaterra', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', code: 'ENG', ranking: 4 },
-  GER: { name: 'Alemanha', flag: '🇩🇪', code: 'GER', ranking: 12 },
-  ESP: { name: 'Espanha', flag: '🇪🇸', code: 'ESP', ranking: 3 },
-  POR: { name: 'Portugal', flag: '🇵🇹', code: 'POR', ranking: 7 },
-  ITA: { name: 'Itália', flag: '🇮🇹', code: 'ITA', ranking: 9 },
-  NED: { name: 'Holanda', flag: '🇳🇱', code: 'NED', ranking: 8 },
-  BEL: { name: 'Bélgica', flag: '🇧🇪', code: 'BEL', ranking: 6 },
-  CRO: { name: 'Croácia', flag: '🇭🇷', code: 'CRO', ranking: 10 },
-  URU: { name: 'Uruguai', flag: '🇺🇾', code: 'URU', ranking: 14 },
-  COL: { name: 'Colômbia', flag: '🇨🇴', code: 'COL', ranking: 13 },
-  MAR: { name: 'Marrocos', flag: '🇲🇦', code: 'MAR', ranking: 12 },
-  SEN: { name: 'Senegal', flag: '🇸🇳', code: 'SEN', ranking: 17 },
-  JPN: { name: 'Japão', flag: '🇯🇵', code: 'JPN', ranking: 18 },
-  KOR: { name: 'Coreia do Sul', flag: '🇰🇷', code: 'KOR', ranking: 22 },
-  AUS: { name: 'Austrália', flag: '🇦🇺', code: 'AUS', ranking: 24 },
-  SAU: { name: 'Arábia Saudita', flag: '🇸🇦', code: 'SAU', ranking: 53 },
-  EGY: { name: 'Egito', flag: '🇪🇬', code: 'EGY', ranking: 36 },
-  NGA: { name: 'Nigéria', flag: '🇳🇬', code: 'NGA', ranking: 28 },
-  ECU: { name: 'Equador', flag: '🇪🇨', code: 'ECU', ranking: 31 },
-  CHI: { name: 'Chile', flag: '🇨🇱', code: 'CHI', ranking: 42 },
-  PAR: { name: 'Paraguai', flag: '🇵🇾', code: 'PAR', ranking: 56 },
-  PER: { name: 'Peru', flag: '🇵🇪', code: 'PER', ranking: 32 },
-  SUI: { name: 'Suíça', flag: '🇨🇭', code: 'SUI', ranking: 19 },
-  DEN: { name: 'Dinamarca', flag: '🇩🇰', code: 'DEN', ranking: 21 },
-  SRB: { name: 'Sérvia', flag: '🇷🇸', code: 'SRB', ranking: 33 },
-  POL: { name: 'Polônia', flag: '🇵🇱', code: 'POL', ranking: 30 },
-  SWE: { name: 'Suécia', flag: '🇸🇪', code: 'SWE', ranking: 27 },
-  NOR: { name: 'Noruega', flag: '🇳🇴', code: 'NOR', ranking: 47 },
-  UKR: { name: 'Ucrânia', flag: '🇺🇦', code: 'UKR', ranking: 22 },
-  TUR: { name: 'Turquia', flag: '🇹🇷', code: 'TUR', ranking: 35 },
-  DZA: { name: 'Argélia', flag: '🇩🇿', code: 'DZA', ranking: 43 },
-  CMR: { name: 'Camarões', flag: '🇨🇲', code: 'CMR', ranking: 46 },
-  GHA: { name: 'Gana', flag: '🇬🇭', code: 'GHA', ranking: 64 },
-  CIV: { name: 'Costa do Marfim', flag: '🇨🇮', code: 'CIV', ranking: 39 },
-  CRC: { name: 'Costa Rica', flag: '🇨🇷', code: 'CRC', ranking: 52 },
-  PAN: { name: 'Panamá', flag: '🇵🇦', code: 'PAN', ranking: 41 },
-  JAM: { name: 'Jamaica', flag: '🇯🇲', code: 'JAM', ranking: 55 },
-  RSA: { name: 'África do Sul', flag: '🇿🇦', code: 'RSA', ranking: 59 },
-  MLI: { name: 'Mali', flag: '🇲🇱', code: 'MLI', ranking: 44 },
-  TUN: { name: 'Tunísia', flag: '🇹🇳', code: 'TUN', ranking: 29 },
-  IRQ: { name: 'Iraque', flag: '🇮🇶', code: 'IRQ', ranking: 58 },
-  UZB: { name: 'Uzbequistão', flag: '🇺🇿', code: 'UZB', ranking: 66 },
+  "MEX": {
+    "name": "M\u00e9xico",
+    "flag": "\ud83c\uddf2\ud83c\uddfd",
+    "code": "MEX",
+    "ranking": 15
+  },
+  "RSA": {
+    "name": "\u00c1frica do Sul",
+    "flag": "\ud83c\uddff\ud83c\udde6",
+    "code": "RSA",
+    "ranking": 59
+  },
+  "KOR": {
+    "name": "Coreia do Sul",
+    "flag": "\ud83c\uddf0\ud83c\uddf7",
+    "code": "KOR",
+    "ranking": 22
+  },
+  "CZE": {
+    "name": "Ch\u00e9quia",
+    "flag": "\ud83c\udde8\ud83c\uddff",
+    "code": "CZE",
+    "ranking": 35
+  },
+  "CAN": {
+    "name": "Canad\u00e1",
+    "flag": "\ud83c\udde8\ud83c\udde6",
+    "code": "CAN",
+    "ranking": 40
+  },
+  "BIH": {
+    "name": "B\u00f3snia e Herzegovina",
+    "flag": "\ud83c\udde7\ud83c\udde6",
+    "code": "BIH",
+    "ranking": 70
+  },
+  "QAT": {
+    "name": "Qatar",
+    "flag": "\ud83c\uddf6\ud83c\udde6",
+    "code": "QAT",
+    "ranking": 34
+  },
+  "SUI": {
+    "name": "Su\u00ed\u00e7a",
+    "flag": "\ud83c\udde8\ud83c\udded",
+    "code": "SUI",
+    "ranking": 19
+  },
+  "BRA": {
+    "name": "Brasil",
+    "flag": "\ud83c\udde7\ud83c\uddf7",
+    "code": "BRA",
+    "ranking": 5
+  },
+  "MAR": {
+    "name": "Marrocos",
+    "flag": "\ud83c\uddf2\ud83c\udde6",
+    "code": "MAR",
+    "ranking": 12
+  },
+  "HAI": {
+    "name": "Haiti",
+    "flag": "\ud83c\udded\ud83c\uddf9",
+    "code": "HAI",
+    "ranking": 85
+  },
+  "SCO": {
+    "name": "Esc\u00f3cia",
+    "flag": "\ud83c\udff4\u200d\udb40\udc61\udb40\udc69\udb40\udc72\udb40\udc7f",
+    "code": "SCO",
+    "ranking": 39
+  },
+  "USA": {
+    "name": "EUA",
+    "flag": "\ud83c\uddfa\ud83c\uddf8",
+    "code": "USA",
+    "ranking": 11
+  },
+  "PAR": {
+    "name": "Paraguai",
+    "flag": "\ud83c\uddf5\ud83c\uddfe",
+    "code": "PAR",
+    "ranking": 56
+  },
+  "AUS": {
+    "name": "Austr\u00e1lia",
+    "flag": "\ud83c\udde6\ud83c\uddfa",
+    "code": "AUS",
+    "ranking": 24
+  },
+  "TUR": {
+    "name": "Turquia",
+    "flag": "\ud83c\uddf9\ud83c\uddf7",
+    "code": "TUR",
+    "ranking": 35
+  },
+  "GER": {
+    "name": "Alemanha",
+    "flag": "\ud83c\udde9\ud83c\uddea",
+    "code": "GER",
+    "ranking": 12
+  },
+  "CUW": {
+    "name": "Cura\u00e7ao",
+    "flag": "\ud83c\udde8\ud83c\uddfc",
+    "code": "CUW",
+    "ranking": 90
+  },
+  "CIV": {
+    "name": "Costa do Marfim",
+    "flag": "\ud83c\udde8\ud83c\uddee",
+    "code": "CIV",
+    "ranking": 39
+  },
+  "ECU": {
+    "name": "Equador",
+    "flag": "\ud83c\uddea\ud83c\udde8",
+    "code": "ECU",
+    "ranking": 31
+  },
+  "NED": {
+    "name": "Holanda",
+    "flag": "\ud83c\uddf3\ud83c\uddf1",
+    "code": "NED",
+    "ranking": 8
+  },
+  "JPN": {
+    "name": "Jap\u00e3o",
+    "flag": "\ud83c\uddef\ud83c\uddf5",
+    "code": "JPN",
+    "ranking": 18
+  },
+  "SWE": {
+    "name": "Su\u00e9cia",
+    "flag": "\ud83c\uddf8\ud83c\uddea",
+    "code": "SWE",
+    "ranking": 27
+  },
+  "TUN": {
+    "name": "Tun\u00edsia",
+    "flag": "\ud83c\uddf9\ud83c\uddf3",
+    "code": "TUN",
+    "ranking": 29
+  },
+  "BEL": {
+    "name": "B\u00e9lgica",
+    "flag": "\ud83c\udde7\ud83c\uddea",
+    "code": "BEL",
+    "ranking": 6
+  },
+  "EGY": {
+    "name": "Egito",
+    "flag": "\ud83c\uddea\ud83c\uddec",
+    "code": "EGY",
+    "ranking": 36
+  },
+  "IRN": {
+    "name": "Ir\u00e3",
+    "flag": "\ud83c\uddee\ud83c\uddf7",
+    "code": "IRN",
+    "ranking": 20
+  },
+  "NZL": {
+    "name": "Nova Zel\u00e2ndia",
+    "flag": "\ud83c\uddf3\ud83c\uddff",
+    "code": "NZL",
+    "ranking": 80
+  },
+  "ESP": {
+    "name": "Espanha",
+    "flag": "\ud83c\uddea\ud83c\uddf8",
+    "code": "ESP",
+    "ranking": 3
+  },
+  "CPV": {
+    "name": "Cabo Verde",
+    "flag": "\ud83c\udde8\ud83c\uddfb",
+    "code": "CPV",
+    "ranking": 65
+  },
+  "KSA": {
+    "name": "Ar\u00e1bia Saudita",
+    "flag": "\ud83c\uddf8\ud83c\udde6",
+    "code": "KSA",
+    "ranking": 53
+  },
+  "URU": {
+    "name": "Uruguai",
+    "flag": "\ud83c\uddfa\ud83c\uddfe",
+    "code": "URU",
+    "ranking": 14
+  },
+  "FRA": {
+    "name": "Fran\u00e7a",
+    "flag": "\ud83c\uddeb\ud83c\uddf7",
+    "code": "FRA",
+    "ranking": 2
+  },
+  "SEN": {
+    "name": "Senegal",
+    "flag": "\ud83c\uddf8\ud83c\uddf3",
+    "code": "SEN",
+    "ranking": 17
+  },
+  "IRQ": {
+    "name": "Iraque",
+    "flag": "\ud83c\uddee\ud83c\uddf6",
+    "code": "IRQ",
+    "ranking": 58
+  },
+  "NOR": {
+    "name": "Noruega",
+    "flag": "\ud83c\uddf3\ud83c\uddf4",
+    "code": "NOR",
+    "ranking": 47
+  },
+  "ARG": {
+    "name": "Argentina",
+    "flag": "\ud83c\udde6\ud83c\uddf7",
+    "code": "ARG",
+    "ranking": 1
+  },
+  "ALG": {
+    "name": "Arg\u00e9lia",
+    "flag": "\ud83c\udde9\ud83c\uddff",
+    "code": "ALG",
+    "ranking": 43
+  },
+  "AUT": {
+    "name": "\u00c1ustria",
+    "flag": "\ud83c\udde6\ud83c\uddf9",
+    "code": "AUT",
+    "ranking": 25
+  },
+  "JOR": {
+    "name": "Jord\u00e2nia",
+    "flag": "\ud83c\uddef\ud83c\uddf4",
+    "code": "JOR",
+    "ranking": 71
+  },
+  "POR": {
+    "name": "Portugal",
+    "flag": "\ud83c\uddf5\ud83c\uddf9",
+    "code": "POR",
+    "ranking": 7
+  },
+  "COD": {
+    "name": "RD Congo",
+    "flag": "\ud83c\udde8\ud83c\udde9",
+    "code": "COD",
+    "ranking": 60
+  },
+  "UZB": {
+    "name": "Uzbequist\u00e3o",
+    "flag": "\ud83c\uddfa\ud83c\uddff",
+    "code": "UZB",
+    "ranking": 66
+  },
+  "COL": {
+    "name": "Col\u00f4mbia",
+    "flag": "\ud83c\udde8\ud83c\uddf4",
+    "code": "COL",
+    "ranking": 13
+  },
+  "ENG": {
+    "name": "Inglaterra",
+    "flag": "\ud83c\udff4\u200d\udb40\udc61\udb40\udc69\udb40\udc72\udb40\udc7f",
+    "code": "ENG",
+    "ranking": 4
+  },
+  "CRO": {
+    "name": "Cro\u00e1cia",
+    "flag": "\ud83c\udded\ud83c\uddf7",
+    "code": "CRO",
+    "ranking": 10
+  },
+  "GHA": {
+    "name": "Gana",
+    "flag": "\ud83c\uddec\ud83c\udded",
+    "code": "GHA",
+    "ranking": 64
+  },
+  "PAN": {
+    "name": "Panam\u00e1",
+    "flag": "\ud83c\uddf5\ud83c\udde6",
+    "code": "PAN",
+    "ranking": 41
+  }
 }
 
 export const GROUPS_CONFIG: Record<string, string[]> = {
-  A: ['USA', 'COL', 'SUI', 'NGA'],
-  B: ['MEX', 'GER', 'ECU', 'UZB'],
-  C: ['CAN', 'POR', 'CHI', 'MLI'],
-  D: ['BRA', 'TUR', 'GHA', 'PAN'],
-  E: ['ARG', 'DEN', 'SAU', 'JAM'],
-  F: ['FRA', 'SWE', 'EGY', 'AUS'],
-  G: ['ENG', 'SRB', 'CIV', 'IRQ'],
-  H: ['ESP', 'PER', 'CMR', 'KOR'],
-  I: ['ITA', 'POL', 'DZA', 'CRC'],
-  J: ['NED', 'NOR', 'SEN', 'RSA'],
-  K: ['BEL', 'UKR', 'MAR', 'TUN'],
-  L: ['CRO', 'URU', 'JPN', 'PAR'],
+  "A": [
+    "MEX",
+    "RSA",
+    "KOR",
+    "CZE"
+  ],
+  "B": [
+    "CAN",
+    "BIH",
+    "QAT",
+    "SUI"
+  ],
+  "C": [
+    "BRA",
+    "MAR",
+    "HAI",
+    "SCO"
+  ],
+  "D": [
+    "USA",
+    "PAR",
+    "AUS",
+    "TUR"
+  ],
+  "E": [
+    "GER",
+    "CUW",
+    "CIV",
+    "ECU"
+  ],
+  "F": [
+    "NED",
+    "JPN",
+    "SWE",
+    "TUN"
+  ],
+  "G": [
+    "BEL",
+    "EGY",
+    "IRN",
+    "NZL"
+  ],
+  "H": [
+    "ESP",
+    "CPV",
+    "KSA",
+    "URU"
+  ],
+  "I": [
+    "FRA",
+    "SEN",
+    "IRQ",
+    "NOR"
+  ],
+  "J": [
+    "ARG",
+    "ALG",
+    "AUT",
+    "JOR"
+  ],
+  "K": [
+    "POR",
+    "COD",
+    "UZB",
+    "COL"
+  ],
+  "L": [
+    "ENG",
+    "CRO",
+    "GHA",
+    "PAN"
+  ]
 }
 
 export const STADIUMS = [
-  { city: 'New York/New Jersey', stadium: 'MetLife Stadium', country: 'USA' },
-  { city: 'Mexico City', stadium: 'Estadio Azteca', country: 'MEX' },
-  { city: 'Los Angeles', stadium: 'SoFi Stadium', country: 'USA' },
-  { city: 'Vancouver', stadium: 'BC Place', country: 'CAN' },
-  { city: 'Miami', stadium: 'Hard Rock Stadium', country: 'USA' },
-  { city: 'Dallas', stadium: 'AT&T Stadium', country: 'USA' },
-  { city: 'Atlanta', stadium: 'Mercedes-Benz Stadium', country: 'USA' },
-  { city: 'Seattle', stadium: 'Lumen Field', country: 'USA' },
-  { city: 'Toronto', stadium: 'BMO Field', country: 'CAN' },
-  { city: 'San Francisco', stadium: "Levi's Stadium", country: 'USA' },
-  { city: 'Boston', stadium: 'Gillette Stadium', country: 'USA' },
-  { city: 'Philadelphia', stadium: 'Lincoln Financial Field', country: 'USA' },
-  { city: 'Houston', stadium: 'NRG Stadium', country: 'USA' },
-  { city: 'Kansas City', stadium: 'Arrowhead Stadium', country: 'USA' },
-  { city: 'Monterrey', stadium: 'Estadio BBVA', country: 'MEX' },
-  { city: 'Guadalajara', stadium: 'Estadio Akron', country: 'MEX' },
+  {
+    "city": "New York/New Jersey",
+    "stadium": "MetLife Stadium",
+    "country": "USA"
+  },
+  {
+    "city": "Mexico City",
+    "stadium": "Estadio Azteca",
+    "country": "MEX"
+  },
+  {
+    "city": "Los Angeles",
+    "stadium": "SoFi Stadium",
+    "country": "USA"
+  },
+  {
+    "city": "Vancouver",
+    "stadium": "BC Place",
+    "country": "CAN"
+  },
+  {
+    "city": "Miami",
+    "stadium": "Hard Rock Stadium",
+    "country": "USA"
+  },
+  {
+    "city": "Dallas",
+    "stadium": "AT&T Stadium",
+    "country": "USA"
+  },
+  {
+    "city": "Atlanta",
+    "stadium": "Mercedes-Benz Stadium",
+    "country": "USA"
+  },
+  {
+    "city": "Seattle",
+    "stadium": "Lumen Field",
+    "country": "USA"
+  },
+  {
+    "city": "Toronto",
+    "stadium": "BMO Field",
+    "country": "CAN"
+  },
+  {
+    "city": "San Francisco",
+    "stadium": "Levi's Stadium",
+    "country": "USA"
+  },
+  {
+    "city": "Boston",
+    "stadium": "Gillette Stadium",
+    "country": "USA"
+  },
+  {
+    "city": "Philadelphia",
+    "stadium": "Lincoln Financial Field",
+    "country": "USA"
+  },
+  {
+    "city": "Houston",
+    "stadium": "NRG Stadium",
+    "country": "USA"
+  },
+  {
+    "city": "Kansas City",
+    "stadium": "Arrowhead Stadium",
+    "country": "USA"
+  },
+  {
+    "city": "Monterrey",
+    "stadium": "Estadio BBVA",
+    "country": "MEX"
+  },
+  {
+    "city": "Guadalajara",
+    "stadium": "Estadio Akron",
+    "country": "MEX"
+  }
 ]
 
 export const STAR_PLAYERS: Record<string, string> = {
-  USA: 'Christian Pulisic', MEX: 'Santiago Giménez', CAN: 'Jonathan David',
-  BRA: 'Vinícius Júnior', ARG: 'Lionel Messi', FRA: 'Kylian Mbappé',
-  ENG: 'Jude Bellingham', GER: 'Jamal Musiala', ESP: 'Lamine Yamal',
-  POR: 'Cristiano Ronaldo', ITA: 'Nicolò Barella', NED: 'Cody Gakpo',
-  BEL: 'Kevin De Bruyne', CRO: 'Luka Modrić', URU: 'Darwin Núñez',
-  COL: 'Luis Díaz', MAR: 'Achraf Hakimi', SEN: 'Sadio Mané',
-  JPN: 'Kaoru Mitoma', KOR: 'Heung-min Son', AUS: 'Martin Boyle',
-  SAU: 'Salem Al-Dawsari', EGY: 'Mohamed Salah', NGA: 'Victor Osimhen',
-  ECU: 'Enner Valencia', CHI: 'Alexis Sánchez', PAR: 'Miguel Almirón',
-  PER: 'Gianluca Lapadula', SUI: 'Granit Xhaka', DEN: 'Rasmus Højlund',
-  SRB: 'Aleksandar Mitrović', POL: 'Robert Lewandowski', SWE: 'Alexander Isak',
-  NOR: 'Erling Haaland', UKR: 'Mykhailo Mudryk', TUR: 'Arda Güler',
-  DZA: 'Riyad Mahrez', CMR: 'Vincent Aboubakar', GHA: 'Mohammed Kudus',
-  CIV: 'Sébastien Haller', CRC: 'Joel Campbell', PAN: 'Adalberto Carrasquilla',
-  JAM: 'Leon Bailey', RSA: 'Percy Tau', MLI: 'Yves Bissouma',
-  TUN: 'Youssef Msakni', IRQ: 'Aymen Hussein', UZB: 'Eldor Shomurodov',
+  "USA": "Christian Pulisic",
+  "MEX": "Santiago Gim\u00e9nez",
+  "CAN": "Jonathan David",
+  "BRA": "Vin\u00edcius J\u00fanior",
+  "ARG": "Lionel Messi",
+  "FRA": "Kylian Mbapp\u00e9",
+  "ENG": "Jude Bellingham",
+  "GER": "Jamal Musiala",
+  "ESP": "Lamine Yamal",
+  "POR": "Cristiano Ronaldo",
+  "NED": "Cody Gakpo",
+  "BEL": "Kevin De Bruyne",
+  "CRO": "Luka Modri\u0107",
+  "URU": "Darwin N\u00fa\u00f1ez",
+  "COL": "Luis D\u00edaz",
+  "MAR": "Achraf Hakimi",
+  "SEN": "Sadio Man\u00e9",
+  "JPN": "Kaoru Mitoma",
+  "KOR": "Heung-min Son",
+  "AUS": "Martin Boyle",
+  "KSA": "Salem Al-Dawsari",
+  "EGY": "Mohamed Salah",
+  "ECU": "Enner Valencia",
+  "PAR": "Miguel Almir\u00f3n",
+  "SUI": "Granit Xhaka",
+  "SWE": "Alexander Isak",
+  "NOR": "Erling Haaland",
+  "TUR": "Arda G\u00fcler",
+  "ALG": "Riyad Mahrez",
+  "GHA": "Mohammed Kudus",
+  "CIV": "S\u00e9bastien Haller",
+  "PAN": "Adalberto Carrasquilla",
+  "TUN": "Youssef Msakni",
+  "IRQ": "Aymen Hussein",
+  "UZB": "Eldor Shomurodov",
+  "CZE": "Tomas Soucek",
+  "BIH": "Edin Dzeko",
+  "QAT": "Akram Afif",
+  "RSA": "Percy Tau",
+  "HAI": "Frantzdy Pierrot",
+  "SCO": "Andrew Robertson",
+  "CUW": "Juninho Bacuna",
+  "IRN": "Mehdi Taremi",
+  "NZL": "Chris Wood",
+  "CPV": "Ryan Mendes",
+  "AUT": "David Alaba",
+  "JOR": "Mousa Al-Tamari",
+  "COD": "Yoane Wissa"
 }
 
 export const STAR_PLAYER_CLUBS: Record<string, string> = {
-  USA: 'AC Milan', MEX: 'Feyenoord', CAN: 'Lille OSC',
-  BRA: 'Real Madrid', ARG: 'Inter Miami', FRA: 'Real Madrid',
-  ENG: 'Real Madrid', GER: 'Bayern Munich', ESP: 'FC Barcelona',
-  POR: 'Al Nassr', ITA: 'Inter Milan', NED: 'Liverpool',
-  BEL: 'Manchester City', CRO: 'Real Madrid', URU: 'Liverpool',
-  COL: 'Liverpool', MAR: 'PSG', SEN: 'Al Nassr',
-  JPN: 'Brighton', KOR: 'Tottenham', AUS: 'Hibernian',
-  SAU: 'Al Hilal', EGY: 'Liverpool', NGA: 'Galatasaray',
-  ECU: 'Internacional', CHI: 'Udinese', PAR: 'Newcastle',
-  PER: 'Cagliari', SUI: 'Bayer Leverkusen', DEN: 'Manchester United',
-  SRB: 'Al Hilal', POL: 'FC Barcelona', SWE: 'Newcastle',
-  NOR: 'Manchester City', UKR: 'Chelsea', TUR: 'Real Madrid',
-  DZA: 'Al Ahli', CMR: 'Besiktas', GHA: 'West Ham',
-  CIV: 'Leganés', CRC: 'Alajuelense', PAN: 'Houston Dynamo',
-  JAM: 'Aston Villa', RSA: 'Al Ahly', MLI: 'Tottenham',
-  TUN: 'Al-Arabi', IRQ: 'Al-Khor', UZB: 'Cagliari',
+  "USA": "AC Milan",
+  "MEX": "Feyenoord",
+  "CAN": "Lille OSC",
+  "BRA": "Real Madrid",
+  "ARG": "Inter Miami",
+  "FRA": "Real Madrid",
+  "ENG": "Real Madrid",
+  "GER": "Bayern Munich",
+  "ESP": "FC Barcelona",
+  "POR": "Al Nassr",
+  "NED": "Liverpool",
+  "BEL": "Manchester City",
+  "CRO": "Real Madrid",
+  "URU": "Liverpool",
+  "COL": "Liverpool",
+  "MAR": "PSG",
+  "SEN": "Al Nassr",
+  "JPN": "Brighton",
+  "KOR": "Tottenham",
+  "AUS": "Hibernian",
+  "KSA": "Al Hilal",
+  "EGY": "Liverpool",
+  "ECU": "Internacional",
+  "PAR": "Newcastle",
+  "SUI": "Bayer Leverkusen",
+  "SWE": "Newcastle",
+  "NOR": "Manchester City",
+  "TUR": "Real Madrid",
+  "ALG": "Al Ahli",
+  "GHA": "West Ham",
+  "CIV": "Legan\u00e9s",
+  "PAN": "Houston Dynamo",
+  "TUN": "Al-Arabi",
+  "IRQ": "Al-Khor",
+  "UZB": "Cagliari",
+  "CZE": "West Ham",
+  "BIH": "Fenerbahce",
+  "QAT": "Al Sadd",
+  "RSA": "Al Ahly",
+  "HAI": "AEK Athens",
+  "SCO": "Liverpool",
+  "CUW": "Al-Okhdood",
+  "IRN": "Inter Milan",
+  "NZL": "Nottingham Forest",
+  "CPV": "Karag\u00fcmr\u00fck",
+  "AUT": "Real Madrid",
+  "JOR": "Montpellier",
+  "COD": "Brentford"
 }
 
 export const INITIAL_SCORERS: Scorer[] = [
-  { name: "Kylian Mbappé", team: 'FRA', goals: 5, club: 'Real Madrid' },
-  { name: 'Vinícius Júnior', team: 'BRA', goals: 4, club: 'Real Madrid' },
-  { name: 'Erling Haaland', team: 'NOR', goals: 4, club: 'Manchester City' },
-  { name: 'Lionel Messi', team: 'ARG', goals: 3, club: 'Inter Miami' },
-  { name: 'Jude Bellingham', team: 'ENG', goals: 3, club: 'Real Madrid' },
-  { name: 'Lamine Yamal', team: 'ESP', goals: 3, club: 'FC Barcelona' },
-  { name: 'Luis Díaz', team: 'COL', goals: 2, club: 'Liverpool' },
-  { name: 'Christian Pulisic', team: 'USA', goals: 2, club: 'AC Milan' },
+  {
+    "name": "Kylian Mbapp\u00e9",
+    "team": "FRA",
+    "goals": 5,
+    "club": "Real Madrid"
+  },
+  {
+    "name": "Vin\u00edcius J\u00fanior",
+    "team": "BRA",
+    "goals": 4,
+    "club": "Real Madrid"
+  },
+  {
+    "name": "Erling Haaland",
+    "team": "NOR",
+    "goals": 4,
+    "club": "Manchester City"
+  },
+  {
+    "name": "Lionel Messi",
+    "team": "ARG",
+    "goals": 3,
+    "club": "Inter Miami"
+  },
+  {
+    "name": "Jude Bellingham",
+    "team": "ENG",
+    "goals": 3,
+    "club": "Real Madrid"
+  },
+  {
+    "name": "Lamine Yamal",
+    "team": "ESP",
+    "goals": 3,
+    "club": "FC Barcelona"
+  },
+  {
+    "name": "Luis D\u00edaz",
+    "team": "COL",
+    "goals": 2,
+    "club": "Liverpool"
+  },
+  {
+    "name": "Christian Pulisic",
+    "team": "USA",
+    "goals": 2,
+    "club": "AC Milan"
+  }
 ]
 
 export const TEAM_NAMES: Record<string, Record<Language, string>> = {
-  USA: { pt: 'EUA', en: 'USA', es: 'EE.UU.' },
-  MEX: { pt: 'México', en: 'Mexico', es: 'México' },
-  CAN: { pt: 'Canadá', en: 'Canada', es: 'Canadá' },
-  BRA: { pt: 'Brasil', en: 'Brazil', es: 'Brasil' },
-  ARG: { pt: 'Argentina', en: 'Argentina', es: 'Argentina' },
-  FRA: { pt: 'França', en: 'France', es: 'Francia' },
-  ENG: { pt: 'Inglaterra', en: 'England', es: 'Inglaterra' },
-  GER: { pt: 'Alemanha', en: 'Germany', es: 'Alemania' },
-  ESP: { pt: 'Espanha', en: 'Spain', es: 'España' },
-  POR: { pt: 'Portugal', en: 'Portugal', es: 'Portugal' },
-  ITA: { pt: 'Itália', en: 'Italy', es: 'Italia' },
-  NED: { pt: 'Holanda', en: 'Netherlands', es: 'Países Bajos' },
-  BEL: { pt: 'Bélgica', en: 'Belgium', es: 'Bélgica' },
-  CRO: { pt: 'Croácia', en: 'Croatia', es: 'Croacia' },
-  URU: { pt: 'Uruguai', en: 'Uruguay', es: 'Uruguay' },
-  COL: { pt: 'Colômbia', en: 'Colombia', es: 'Colombia' },
-  MAR: { pt: 'Marrocos', en: 'Morocco', es: 'Marruecos' },
-  SEN: { pt: 'Senegal', en: 'Senegal', es: 'Senegal' },
-  JPN: { pt: 'Japão', en: 'Japan', es: 'Japón' },
-  KOR: { pt: 'Coreia do Sul', en: 'South Korea', es: 'Corea del Sur' },
-  AUS: { pt: 'Austrália', en: 'Australia', es: 'Australia' },
-  SAU: { pt: 'Arábia Saudita', en: 'Saudi Arabia', es: 'Arabia Saudita' },
-  EGY: { pt: 'Egito', en: 'Egypt', es: 'Egipto' },
-  NGA: { pt: 'Nigéria', en: 'Nigeria', es: 'Nigéria' },
-  ECU: { pt: 'Equador', en: 'Ecuador', es: 'Ecuador' },
-  CHI: { pt: 'Chile', en: 'Chile', es: 'Chile' },
-  PAR: { pt: 'Paraguai', en: 'Paraguay', es: 'Paraguay' },
-  PER: { pt: 'Peru', en: 'Peru', es: 'Perú' },
-  SUI: { pt: 'Suíça', en: 'Switzerland', es: 'Suiza' },
-  DEN: { pt: 'Dinamarca', en: 'Denmark', es: 'Dinamarca' },
-  SRB: { pt: 'Sérvia', en: 'Serbia', es: 'Serbia' },
-  POL: { pt: 'Polônia', en: 'Poland', es: 'Polonia' },
-  SWE: { pt: 'Suécia', en: 'Sweden', es: 'Suecia' },
-  NOR: { pt: 'Noruega', en: 'Norway', es: 'Noruega' },
-  UKR: { pt: 'Ucrânia', en: 'Ukraine', es: 'Ucrania' },
-  TUR: { pt: 'Turquia', en: 'Turkey', es: 'Turquía' },
-  DZA: { pt: 'Argélia', en: 'Algeria', es: 'Argelia' },
-  CMR: { pt: 'Camarões', en: 'Cameroon', es: 'Camerún' },
-  GHA: { pt: 'Gana', en: 'Ghana', es: 'Ghana' },
-  CIV: { pt: 'Costa do Marfim', en: 'Ivory Coast', es: 'Costa de Marfil' },
-  CRC: { pt: 'Costa Rica', en: 'Costa Rica', es: 'Costa Rica' },
-  PAN: { pt: 'Panamá', en: 'Panama', es: 'Panamá' },
-  JAM: { pt: 'Jamaica', en: 'Jamaica', es: 'Jamaica' },
-  RSA: { pt: 'África do Sul', en: 'South Africa', es: 'Sudáfrica' },
-  MLI: { pt: 'Mali', en: 'Mali', es: 'Mali' },
-  TUN: { pt: 'Tunísia', en: 'Tunisia', es: 'Túnez' },
-  IRQ: { pt: 'Iraque', en: 'Iraq', es: 'Irak' },
-  UZB: { pt: 'Uzbequistão', en: 'Uzbekistan', es: 'Uzbekistán' },
+  "MEX": {
+    "pt": "M\u00e9xico",
+    "en": "Mexico",
+    "es": "M\u00e9xico"
+  },
+  "RSA": {
+    "pt": "\u00c1frica do Sul",
+    "en": "South Africa",
+    "es": "Sud\u00e1frica"
+  },
+  "KOR": {
+    "pt": "Coreia do Sul",
+    "en": "South Korea",
+    "es": "Corea del Sur"
+  },
+  "CZE": {
+    "pt": "Ch\u00e9quia",
+    "en": "Czechia",
+    "es": "Rep\u00fablica Checa"
+  },
+  "CAN": {
+    "pt": "Canad\u00e1",
+    "en": "Canada",
+    "es": "Canad\u00e1"
+  },
+  "BIH": {
+    "pt": "B\u00f3snia",
+    "en": "Bosnia & Herzegovina",
+    "es": "Bosnia y Herzegovina"
+  },
+  "QAT": {
+    "pt": "Qatar",
+    "en": "Qatar",
+    "es": "Catar"
+  },
+  "SUI": {
+    "pt": "Su\u00ed\u00e7a",
+    "en": "Switzerland",
+    "es": "Suiza"
+  },
+  "BRA": {
+    "pt": "Brasil",
+    "en": "Brazil",
+    "es": "Brasil"
+  },
+  "MAR": {
+    "pt": "Marrocos",
+    "en": "Morocco",
+    "es": "Marruecos"
+  },
+  "HAI": {
+    "pt": "Haiti",
+    "en": "Haiti",
+    "es": "Hait\u00ed"
+  },
+  "SCO": {
+    "pt": "Esc\u00f3cia",
+    "en": "Scotland",
+    "es": "Escocia"
+  },
+  "USA": {
+    "pt": "EUA",
+    "en": "USA",
+    "es": "EE.UU."
+  },
+  "PAR": {
+    "pt": "Paraguai",
+    "en": "Paraguay",
+    "es": "Paraguay"
+  },
+  "AUS": {
+    "pt": "Austr\u00e1lia",
+    "en": "Australia",
+    "es": "Australia"
+  },
+  "TUR": {
+    "pt": "Turquia",
+    "en": "Turkey",
+    "es": "Turqu\u00eda"
+  },
+  "GER": {
+    "pt": "Alemanha",
+    "en": "Germany",
+    "es": "Alemania"
+  },
+  "CUW": {
+    "pt": "Cura\u00e7ao",
+    "en": "Cura\u00e7ao",
+    "es": "Curazao"
+  },
+  "CIV": {
+    "pt": "Costa do Marfim",
+    "en": "Ivory Coast",
+    "es": "Costa de Marfil"
+  },
+  "ECU": {
+    "pt": "Equador",
+    "en": "Ecuador",
+    "es": "Ecuador"
+  },
+  "NED": {
+    "pt": "Holanda",
+    "en": "Netherlands",
+    "es": "Pa\u00edses Bajos"
+  },
+  "JPN": {
+    "pt": "Jap\u00e3o",
+    "en": "Japan",
+    "es": "Jap\u00f3n"
+  },
+  "SWE": {
+    "pt": "Su\u00e9cia",
+    "en": "Sweden",
+    "es": "Suecia"
+  },
+  "TUN": {
+    "pt": "Tun\u00edsia",
+    "en": "Tunisia",
+    "es": "T\u00fanez"
+  },
+  "BEL": {
+    "pt": "B\u00e9lgica",
+    "en": "Belgium",
+    "es": "B\u00e9lgica"
+  },
+  "EGY": {
+    "pt": "Egito",
+    "en": "Egypt",
+    "es": "Egipto"
+  },
+  "IRN": {
+    "pt": "Ir\u00e3",
+    "en": "Iran",
+    "es": "Ir\u00e1n"
+  },
+  "NZL": {
+    "pt": "Nova Zel\u00e2ndia",
+    "en": "New Zealand",
+    "es": "Nueva Zelanda"
+  },
+  "ESP": {
+    "pt": "Espanha",
+    "en": "Spain",
+    "es": "Espa\u00f1a"
+  },
+  "CPV": {
+    "pt": "Cabo Verde",
+    "en": "Cabo Verde",
+    "es": "Cabo Verde"
+  },
+  "KSA": {
+    "pt": "Ar\u00e1bia Saudita",
+    "en": "Saudi Arabia",
+    "es": "Arabia Saudita"
+  },
+  "URU": {
+    "pt": "Uruguai",
+    "en": "Uruguay",
+    "es": "Uruguay"
+  },
+  "FRA": {
+    "pt": "Fran\u00e7a",
+    "en": "France",
+    "es": "Francia"
+  },
+  "SEN": {
+    "pt": "Senegal",
+    "en": "Senegal",
+    "es": "Senegal"
+  },
+  "IRQ": {
+    "pt": "Iraque",
+    "en": "Iraq",
+    "es": "Irak"
+  },
+  "NOR": {
+    "pt": "Noruega",
+    "en": "Norway",
+    "es": "Noruega"
+  },
+  "ARG": {
+    "pt": "Argentina",
+    "en": "Argentina",
+    "es": "Argentina"
+  },
+  "ALG": {
+    "pt": "Arg\u00e9lia",
+    "en": "Algeria",
+    "es": "Argelia"
+  },
+  "AUT": {
+    "pt": "\u00c1ustria",
+    "en": "Austria",
+    "es": "Austria"
+  },
+  "JOR": {
+    "pt": "Jord\u00e2nia",
+    "en": "Jordan",
+    "es": "Jordania"
+  },
+  "POR": {
+    "pt": "Portugal",
+    "en": "Portugal",
+    "es": "Portugal"
+  },
+  "COD": {
+    "pt": "RD Congo",
+    "en": "DR Congo",
+    "es": "RD Congo"
+  },
+  "UZB": {
+    "pt": "Uzbequist\u00e3o",
+    "en": "Uzbekistan",
+    "es": "Uzbekist\u00e1n"
+  },
+  "COL": {
+    "pt": "Col\u00f4mbia",
+    "en": "Colombia",
+    "es": "Colombia"
+  },
+  "ENG": {
+    "pt": "Inglaterra",
+    "en": "England",
+    "es": "Inglaterra"
+  },
+  "CRO": {
+    "pt": "Cro\u00e1cia",
+    "en": "Croatia",
+    "es": "Croacia"
+  },
+  "GHA": {
+    "pt": "Gana",
+    "en": "Ghana",
+    "es": "Ghana"
+  },
+  "PAN": {
+    "pt": "Panam\u00e1",
+    "en": "Panama",
+    "es": "Panam\u00e1"
+  }
 }
 
 export const TRANSLATIONS: Record<Language, Record<string, string>> = {

@@ -1,5 +1,6 @@
 import type { Match, GroupStanding, KnockoutSlot, KnockoutMatchState, ThirdPlaceRank, Language } from '../types'
 import { TEAMS, GROUPS_CONFIG, STADIUMS, TEAM_NAMES } from '../data/constants'
+import { OFFICIAL_GROUP_MATCHES } from '../data/officialMatches'
 
 export function getTeamName(code: string, lang: Language): string {
   return TEAM_NAMES[code]?.[lang] || TEAMS[code]?.name || code
@@ -25,32 +26,8 @@ export function simulateMatchScore(homeRank: number, awayRank: number): [number,
 
 export function generateAllMatches(): Record<string, Match> {
   const matches: Record<string, Match> = {}
-  const dates = [
-    '11/06/2026', '12/06/2026', '13/06/2026', '14/06/2026', '15/06/2026',
-    '16/06/2026', '17/06/2026', '18/06/2026', '19/06/2026', '20/06/2026',
-    '21/06/2026', '22/06/2026', '23/06/2026', '24/06/2026', '25/06/2026',
-    '26/06/2026', '27/06/2026',
-  ]
-  const times = ['13:00', '16:00', '19:00', '22:00']
-  const pairings: [number, number, number][] = [
-    [0, 1, 0], [2, 3, 0], [0, 2, 1], [1, 3, 1], [0, 3, 2], [1, 2, 2],
-  ]
-
-  Object.entries(GROUPS_CONFIG).forEach(([groupLetter, teams], groupIdx) => {
-    pairings.forEach(([t1Idx, t2Idx, roundIdx], mIdx) => {
-      const id = `G${groupLetter}-${mIdx + 1}`
-      const stadiumObj = STADIUMS[(groupIdx * 3 + mIdx) % STADIUMS.length]
-      let dateIdx = roundIdx === 0 ? groupIdx % 5 : roundIdx === 1 ? 5 + groupIdx % 5 : 10 + groupIdx % 7
-      matches[id] = {
-        id, group: groupLetter,
-        home: teams[t1Idx], away: teams[t2Idx],
-        homeScore: '', awayScore: '',
-        date: dates[dateIdx] || '20/06/2026',
-        time: times[(groupIdx + mIdx) % times.length],
-        stadium: stadiumObj.stadium,
-        stadiumCity: stadiumObj.city,
-      }
-    })
+  OFFICIAL_GROUP_MATCHES.forEach(m => {
+    matches[m.id] = { ...m }
   })
   return matches
 }
@@ -115,22 +92,22 @@ export function resolveR32Matchups(
   })
   const get3rd = (i: number) => thirds[i]?.code
   return [
-    { home: winners['A'], away: get3rd(0) },
-    { home: runners['B'], away: runners['F'] },
-    { home: winners['C'], away: get3rd(1) },
+    { home: winners['E'], away: get3rd(0) },
+    { home: winners['I'], away: get3rd(1) },
+    { home: runners['A'], away: runners['B'] },
     { home: winners['F'], away: runners['C'] },
-    { home: winners['E'], away: get3rd(2) },
-    { home: winners['I'], away: runners['D'] },
-    { home: winners['D'], away: get3rd(3) },
-    { home: runners['A'], away: runners['E'] },
-    { home: winners['G'], away: get3rd(4) },
-    { home: winners['K'], away: runners['L'] },
-    { home: winners['H'], away: get3rd(5) },
-    { home: winners['J'], away: runners['G'] },
+    { home: winners['C'], away: runners['F'] },
+    { home: runners['E'], away: runners['I'] },
+    { home: winners['A'], away: get3rd(2) },
+    { home: winners['L'], away: get3rd(3) },
+    { home: runners['K'], away: runners['L'] },
+    { home: winners['H'], away: runners['J'] },
+    { home: winners['D'], away: get3rd(4) },
+    { home: winners['G'], away: get3rd(5) },
+    { home: winners['J'], away: runners['H'] },
+    { home: runners['D'], away: runners['G'] },
     { home: winners['B'], away: get3rd(6) },
-    { home: runners['H'], away: runners['K'] },
-    { home: winners['L'], away: get3rd(7) },
-    { home: runners['J'], away: runners['I'] },
+    { home: winners['K'], away: get3rd(7) },
   ]
 }
 
