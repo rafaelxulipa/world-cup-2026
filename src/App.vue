@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import {
   Trophy, Calendar, Users, Search, RefreshCw, Info, Crown, Award,
-  MapPin, Plus, Trash2, HelpCircle, Compass, Save, Printer,
+  MapPin, Plus, Trash2, HelpCircle, Compass, Save, Printer, Download, Upload,
 } from '@lucide/vue'
 import type { Match, KnockoutMatchState, Scorer, TabId, Language, BracketRound, KnockoutSlot } from './types'
 import { TEAMS, GROUPS_CONFIG, STADIUMS, STAR_PLAYERS, STAR_PLAYER_CLUBS, INITIAL_SCORERS, TRANSLATIONS } from './data/constants'
@@ -52,6 +52,8 @@ const activeTab = ref<TabId>('groups')
 const language = ref<Language>(loadLanguage())
 const showResetConfirm = ref(false)
 const playerAlertMessage = ref<string | null>(null)
+const importFileRef = ref<HTMLInputElement | null>(null)
+const importSuccessMsg = ref<string | null>(null)
 const activeGroupFilter = ref('TODOS')
 const mobileBracketRound = ref<BracketRound>('R32')
 const searchScorerQuery = ref('')
@@ -380,6 +382,46 @@ function simulateEntireTournament() {
   activeTab.value = 'knockout'
 }
 
+function exportData() {
+  const data = {
+    version: '1',
+    exportedAt: new Date().toISOString(),
+    matches: localStorage.getItem('wc2026_user_saved_matches'),
+    knockout: localStorage.getItem('wc2026_user_saved_knockout'),
+    scorers: localStorage.getItem('wc2026_user_saved_scorers'),
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `wc2026_backup_${new Date().toISOString().split('T')[0]}.json`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+function handleImport(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target?.result as string)
+      if (data.matches) localStorage.setItem('wc2026_user_saved_matches', data.matches)
+      if (data.knockout) localStorage.setItem('wc2026_user_saved_knockout', data.knockout)
+      if (data.scorers) localStorage.setItem('wc2026_user_saved_scorers', data.scorers)
+      matches.value = loadMatches()
+      knockoutScores.value = loadKnockoutScores()
+      scorers.value = loadScorers()
+      importSuccessMsg.value = t.value.importSuccess
+      setTimeout(() => (importSuccessMsg.value = null), 3000)
+    } catch { /* ignore */ }
+    ;(e.target as HTMLInputElement).value = ''
+  }
+  reader.readAsText(file)
+}
+
 function executeReset() {
   ['wc2026_user_saved_matches', 'wc2026_user_saved_knockout', 'wc2026_user_saved_scorers',
    'wc2026_matches', 'wc2026_knockout', 'wc2026_scorers'].forEach(k => localStorage.removeItem(k))
@@ -449,8 +491,16 @@ function deleteScorer(player: { name: string; team: string }) {
 
     <!-- aria-live para alertas -->
     <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
-      {{ playerAlertMessage }}
+      {{ playerAlertMessage }}{{ importSuccessMsg }}
     </div>
+
+    <!-- Toast de importação -->
+    <transition enter-active-class="transition-all duration-300" enter-from-class="opacity-0 translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition-all duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+      <div v-if="importSuccessMsg" class="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xl border border-emerald-500/50 whitespace-nowrap">
+        <span class="text-base" aria-hidden="true">✓</span>
+        {{ importSuccessMsg }}
+      </div>
+    </transition>
 
     <!-- ─── HEADER ──────────────────────────────────────────────────────────── -->
     <header class="fifa-blue-bg border-b-4 fifa-gold-border text-white shadow-xl">
@@ -475,7 +525,9 @@ function deleteScorer(player: { name: string; team: string }) {
         </div>
 
         <!-- Action buttons + Language -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-2 w-full lg:w-auto select-none mt-2 lg:mt-0">
+        <div class="flex flex-col items-center justify-center gap-2 w-full lg:w-auto select-none mt-2 lg:mt-0 sm:flex-row sm:flex-wrap lg:flex-nowrap">
+
+          <!-- Row 1: Simulate buttons -->
           <div class="flex items-center justify-center gap-1.5 w-full sm:w-auto">
             <button @click="simulateGroupStage" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/15 rounded-lg text-xs font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm whitespace-nowrap" title="Simula todos os jogos de grupos">
               <Compass class="w-3.5 h-3.5 text-blue-300" aria-hidden="true" />
@@ -486,6 +538,8 @@ function deleteScorer(player: { name: string; team: string }) {
               <span class="text-blue-950">{{ t.simFull }}</span>
             </button>
           </div>
+
+          <!-- Row 2: Reset + PDF + Export + Import -->
           <div class="flex items-center justify-center gap-1.5 w-full sm:w-auto">
             <button @click="showResetConfirm = true" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-white/5 hover:bg-red-500/20 hover:text-red-200 border border-white/10 rounded-lg text-xs font-bold transition-all active:scale-95 whitespace-nowrap" :title="t.resetBtn">
               <RefreshCw class="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
@@ -495,13 +549,24 @@ function deleteScorer(player: { name: string; team: string }) {
               <Printer class="w-3.5 h-3.5 text-slate-950" aria-hidden="true" />
               <span>PDF</span>
             </a>
-            <!-- Language selector -->
-            <div role="group" aria-label="Idioma" class="flex bg-blue-950/40 p-1 rounded-lg border border-white/10 gap-0.5 sm:gap-1 shrink-0">
-              <button v-for="lang in (['pt','en','es'] as Language[])" :key="lang" @click="changeLanguage(lang)" :aria-pressed="language === lang" :class="`px-1.5 sm:px-2 py-1 rounded text-[9px] sm:text-[10px] font-black transition-all cursor-pointer ${language === lang ? 'bg-amber-500 text-slate-950' : 'text-slate-300 hover:text-white hover:bg-white/5'}`" :title="lang === 'pt' ? 'Português' : lang === 'en' ? 'English' : 'Español'">
-                {{ lang.toUpperCase() }}
-              </button>
-            </div>
+            <button @click="exportData" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 rounded-lg text-xs font-bold transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap" :title="t.exportBtn">
+              <Download class="w-3.5 h-3.5" aria-hidden="true" />
+              <span>{{ t.exportBtn }}</span>
+            </button>
+            <button @click="importFileRef?.click()" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/15 rounded-lg text-xs font-bold transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap" :title="t.importBtn">
+              <Upload class="w-3.5 h-3.5" aria-hidden="true" />
+              <span>{{ t.importBtn }}</span>
+            </button>
+            <input ref="importFileRef" type="file" accept=".json" class="hidden" @change="handleImport" aria-hidden="true" />
           </div>
+
+          <!-- Row 3: Language selector — sua própria linha no mobile, inline no sm+ -->
+          <div role="group" aria-label="Idioma" class="flex bg-blue-950/40 p-1 rounded-lg border border-white/10 gap-0.5 sm:gap-1 shrink-0">
+            <button v-for="lang in (['pt','en','es'] as Language[])" :key="lang" @click="changeLanguage(lang)" :aria-pressed="language === lang" :class="`px-1.5 sm:px-2 py-1 rounded text-[9px] sm:text-[10px] font-black transition-all cursor-pointer ${language === lang ? 'bg-amber-500 text-slate-950' : 'text-slate-300 hover:text-white hover:bg-white/5'}`" :title="lang === 'pt' ? 'Português' : lang === 'en' ? 'English' : 'Español'">
+              {{ lang.toUpperCase() }}
+            </button>
+          </div>
+
         </div>
       </div>
 

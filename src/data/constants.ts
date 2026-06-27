@@ -882,6 +882,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     tapPenaltyHelp: '⚠️ Toque na bandeira para decidir pênaltis',
     searchPlaceholder: 'Buscar jogador ou país...',
     privacyDisclaimer: 'Este é um simulador NÃO OFICIAL criado por fãs para fins de simulação e entretenimento, não possuindo nenhuma afiliação, associação ou fim lucrativo com a FIFA. Todos os dados de simulação são salvos localmente no seu navegador (LocalStorage) e podem ser apagados a qualquer momento pelo botão Resetar.',
+    exportBtn: 'Exportar', importBtn: 'Importar', importSuccess: 'Dados importados com sucesso!',
   },
   en: {
     title: 'FIFA World Cup 2026',
@@ -919,6 +920,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     tapPenaltyHelp: '⚠️ Tap team flag to set penalty winner',
     searchPlaceholder: 'Search player or country...',
     privacyDisclaimer: 'This is an UNOFFICIAL fan simulator made purely for entertainment and simulation purposes, with zero official association or endorsement by FIFA. All simulation data runs entirely in your browser (LocalStorage) and can be cleared at any time using the Reset button.',
+    exportBtn: 'Export', importBtn: 'Import', importSuccess: 'Data imported successfully!',
   },
   es: {
     title: 'Copa Mundial de la FIFA 2026',
@@ -956,5 +958,6 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     tapPenaltyHelp: '⚠️ Toca la bandera para decidir penaltis',
     searchPlaceholder: 'Buscar jugador o país...',
     privacyDisclaimer: 'Este simulador es un sitio web NO OFICIAL desarrollado por aficionados sin fines lucrativos, sin ninguna afiliación o patrocinio de la FIFA. Todos los resultados se guardan exclusivamente en el almacenamiento local de su navegador (LocalStorage) y pueden reiniciarse en cualquier momento con el botón Reiniciar.',
+    exportBtn: 'Exportar', importBtn: 'Importar', importSuccess: '¡Datos importados con éxito!',
   },
 }
