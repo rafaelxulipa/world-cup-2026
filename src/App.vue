@@ -5,7 +5,7 @@ import {
   MapPin, Plus, Trash2, HelpCircle, Compass, Save, Printer, Download, Upload,
 } from '@lucide/vue'
 import type { Match, KnockoutMatchState, Scorer, TabId, Language, BracketRound, KnockoutSlot } from './types'
-import { TEAMS, GROUPS_CONFIG, STADIUMS, INITIAL_SCORERS, TRANSLATIONS } from './data/constants'
+import { TEAMS, GROUPS_CONFIG, STADIUMS, INITIAL_SCORERS, TRANSLATIONS, STAR_PLAYERS, STAR_PLAYER_CLUBS } from './data/constants'
 import {
   generateAllMatches, getTeamName,
   calculateAllStandings, calculateBestThirdPlaces, resolveKnockoutSlot, buildKnockoutTree,
