@@ -92,22 +92,22 @@ export function resolveR32Matchups(
   })
   const get3rd = (i: number) => thirds[i]?.code
   return [
-    { home: winners['E'], away: get3rd(0) },
-    { home: winners['I'], away: get3rd(1) },
-    { home: runners['A'], away: runners['B'] },
-    { home: winners['F'], away: runners['C'] },
-    { home: winners['C'], away: runners['F'] },
-    { home: runners['E'], away: runners['I'] },
-    { home: winners['A'], away: get3rd(2) },
-    { home: winners['L'], away: get3rd(3) },
-    { home: runners['K'], away: runners['L'] },
-    { home: winners['H'], away: runners['J'] },
-    { home: winners['D'], away: get3rd(4) },
-    { home: winners['G'], away: get3rd(5) },
-    { home: winners['J'], away: runners['H'] },
-    { home: runners['D'], away: runners['G'] },
-    { home: winners['B'], away: get3rd(6) },
-    { home: winners['K'], away: get3rd(7) },
+    { home: winners['E'], away: get3rd(0) },    // R32-1:  Alemanha × 3º (grupos A,B,C,D,F)
+    { home: winners['I'], away: get3rd(1) },    // R32-2:  França × 3º (grupos C,D,F,G,H)
+    { home: runners['A'], away: runners['B'] }, // R32-3:  2ºA × 2ºB
+    { home: winners['F'], away: runners['C'] }, // R32-4:  1ºF × 2ºC
+    { home: runners['K'], away: runners['L'] }, // R32-5:  2ºK × 2ºL
+    { home: winners['H'], away: runners['J'] }, // R32-6:  1ºH × 2ºJ
+    { home: winners['D'], away: get3rd(4) },    // R32-7:  1ºD × 3º (grupos B,E,F,I,J)
+    { home: winners['G'], away: get3rd(5) },    // R32-8:  1ºG × 3º (grupos A,E,H,I,J)
+    { home: winners['C'], away: runners['F'] }, // R32-9:  1ºC × 2ºF
+    { home: runners['E'], away: runners['I'] }, // R32-10: 2ºE × 2ºI
+    { home: winners['A'], away: get3rd(2) },    // R32-11: 1ºA × 3º (grupos C,E,F,H,I)
+    { home: winners['L'], away: get3rd(3) },    // R32-12: 1ºL × 3º (grupos E,H,I,J,K)
+    { home: winners['J'], away: runners['H'] }, // R32-13: 1ºJ × 2ºH
+    { home: runners['D'], away: runners['G'] }, // R32-14: 2ºD × 2ºG
+    { home: winners['B'], away: get3rd(6) },    // R32-15: 1ºB × 3º
+    { home: winners['K'], away: get3rd(7) },    // R32-16: 1ºK × 3º
   ]
 }
 
@@ -120,22 +120,22 @@ export function buildKnockoutTree(
   const emptyState = (): KnockoutMatchState => ({ homeScore: '', awayScore: '', penaltyWinner: null })
 
   const r32Stadiums = [
-    'SoFi Stadium, Los Angeles', 'Gillette Stadium, Boston', 'Estadio BBVA, Monterrey',
-    'NRG Stadium, Houston', 'AT&T Stadium, Dallas', 'MetLife Stadium, New Jersey',
-    'Estadio Azteca, Mexico City', 'Mercedes-Benz Stadium, Atlanta', 'Lumen Field, Seattle',
-    "Levi's Stadium, San Francisco", 'SoFi Stadium, Los Angeles', 'BMO Field, Toronto',
+    'Gillette Stadium, Boston', 'NRG Stadium, Houston', 'Estadio BBVA, Monterrey',
+    'SoFi Stadium, Los Angeles', 'Lumen Field, Seattle', "Levi's Stadium, San Francisco",
+    'SoFi Stadium, Los Angeles', 'BMO Field, Toronto', 'AT&T Stadium, Dallas',
+    'MetLife Stadium, New Jersey', 'Estadio Azteca, Mexico City', 'Mercedes-Benz Stadium, Atlanta',
     'BC Place, Vancouver', 'AT&T Stadium, Dallas', 'Hard Rock Stadium, Miami',
     'Arrowhead Stadium, Kansas City',
   ]
   const r32Dates = [
-    '28/06/2026', '29/06/2026', '29/06/2026', '29/06/2026',
-    '30/06/2026', '30/06/2026', '30/06/2026', '01/07/2026',
-    '01/07/2026', '01/07/2026', '02/07/2026', '02/07/2026',
+    '29/06/2026', '30/06/2026', '28/06/2026', '29/06/2026',
+    '02/07/2026', '02/07/2026', '01/07/2026', '01/07/2026',
+    '29/06/2026', '30/06/2026', '30/06/2026', '01/07/2026',
     '03/07/2026', '03/07/2026', '03/07/2026', '03/07/2026',
   ]
   const r32Times = [
-    '16:00', '17:30', '22:00', '14:00', '14:00', '18:00', '22:00', '13:00',
-    '17:00', '21:00', '16:00', '20:00', '00:00', '15:00', '19:00', '22:30',
+    '17:30', '18:00', '16:00', '22:00', '20:00', '16:00', '21:00', '17:00',
+    '14:00', '14:00', '22:00', '13:00', '19:00', '15:00', '00:00', '22:30',
   ]
   const resolvedR32: KnockoutSlot[] = Array.from({ length: 16 }, (_, i) => {
     const { home, away } = r32Pairings[i] ?? {}
@@ -147,16 +147,16 @@ export function buildKnockoutTree(
   })
 
   const r16Stadiums = [
-    'NRG Stadium, Houston', 'Lincoln Financial Field, Philadelphia',
-    'MetLife Stadium, New Jersey', 'Estadio Azteca, Mexico City',
+    'Lincoln Financial Field, Philadelphia', 'NRG Stadium, Houston',
     'AT&T Stadium, Dallas', 'Lumen Field, Seattle',
+    'MetLife Stadium, New Jersey', 'Estadio Azteca, Mexico City',
     'Mercedes-Benz Stadium, Atlanta', 'BC Place, Vancouver',
   ]
   const r16Dates = [
-    '04/07/2026', '04/07/2026', '05/07/2026', '05/07/2026',
-    '06/07/2026', '06/07/2026', '07/07/2026', '07/07/2026',
+    '04/07/2026', '04/07/2026', '06/07/2026', '06/07/2026',
+    '05/07/2026', '05/07/2026', '07/07/2026', '07/07/2026',
   ]
-  const r16Times = ['14:00', '18:00', '17:00', '21:00', '16:00', '21:00', '13:00', '17:00']
+  const r16Times = ['18:00', '14:00', '16:00', '21:00', '17:00', '21:00', '13:00', '17:00']
   const resolvedR16: KnockoutSlot[] = Array.from({ length: 8 }, (_, i) =>
     resolveKnockoutSlot(
       `R16-${i + 1}`,
