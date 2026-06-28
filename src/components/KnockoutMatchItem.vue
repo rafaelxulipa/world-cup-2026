@@ -9,9 +9,11 @@ const props = withDefaults(defineProps<{
   match: KnockoutSlot
   isEmphasized?: boolean
   isUnsaved?: boolean
+  readOnly?: boolean
 }>(), {
   isEmphasized: false,
   isUnsaved: false,
+  readOnly: false,
 })
 
 const emit = defineEmits<{
@@ -74,22 +76,23 @@ function awayAriaLabel() {
       <div class="flex items-center justify-between gap-1.5">
         <button
           type="button"
-          @click="() => { if (isTied && match.home) emit('setPenalty', match.matchId, 'home') }"
+          @click="() => { if (!readOnly && isTied && match.home) emit('setPenalty', match.matchId, 'home') }"
           :class="`flex items-center gap-1.5 pr-1.5 rounded-lg transition-all overflow-hidden text-left max-w-[70%] shrink
-            ${isTied && match.home ? 'hover:bg-yellow-500/10 p-1 cursor-pointer' : ''}
+            ${!readOnly && isTied && match.home ? 'hover:bg-yellow-500/10 p-1 cursor-pointer' : 'cursor-default'}
             ${match.winner === match.home && match.home ? 'opacity-100 font-extrabold' : !match.winner && match.home ? 'opacity-100' : 'opacity-50'}`"
-          :aria-label="isTied && match.home ? `Definir ${TEAMS[match.home]?.name || match.home} como vencedor nos pênaltis` : undefined"
+          :aria-label="!readOnly && isTied && match.home ? `Definir ${TEAMS[match.home]?.name || match.home} como vencedor nos pênaltis` : undefined"
         >
           <TeamFlag :code="match.home || ''" text-class="text-xs truncate" />
           <span
             v-if="isTied && match.penaltyWinner === 'home'"
             class="text-[9px] font-extrabold bg-yellow-500 text-slate-950 px-1 py-0.5 rounded-md uppercase tracking-tighter shrink-0"
-            title="Venceu no Shootout"
-          >
-            PEN 👑
-          </span>
+          >PEN 👑</span>
         </button>
+        <span v-if="readOnly" :class="`w-9 h-8 inline-flex items-center justify-center font-mono font-black text-sm rounded-lg shrink-0 ${match.winner === match.home ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100'}`">
+          {{ match.homeScore !== '' ? match.homeScore : '-' }}
+        </span>
         <input
+          v-else
           type="number"
           min="0"
           :disabled="!match.home || !match.away"
@@ -105,22 +108,23 @@ function awayAriaLabel() {
       <div class="flex items-center justify-between gap-1.5">
         <button
           type="button"
-          @click="() => { if (isTied && match.away) emit('setPenalty', match.matchId, 'away') }"
+          @click="() => { if (!readOnly && isTied && match.away) emit('setPenalty', match.matchId, 'away') }"
           :class="`flex items-center gap-1.5 pr-1.5 rounded-lg transition-all overflow-hidden text-left max-w-[70%] shrink
-            ${isTied && match.away ? 'hover:bg-yellow-500/10 p-1 cursor-pointer' : ''}
+            ${!readOnly && isTied && match.away ? 'hover:bg-yellow-500/10 p-1 cursor-pointer' : 'cursor-default'}
             ${match.winner === match.away && match.away ? 'opacity-100 font-extrabold' : !match.winner && match.away ? 'opacity-100' : 'opacity-50'}`"
-          :aria-label="isTied && match.away ? `Definir ${TEAMS[match.away]?.name || match.away} como vencedor nos pênaltis` : undefined"
+          :aria-label="!readOnly && isTied && match.away ? `Definir ${TEAMS[match.away]?.name || match.away} como vencedor nos pênaltis` : undefined"
         >
           <TeamFlag :code="match.away || ''" text-class="text-xs truncate" />
           <span
             v-if="isTied && match.penaltyWinner === 'away'"
             class="text-[9px] font-extrabold bg-yellow-500 text-slate-950 px-1 py-0.5 rounded-md uppercase tracking-tighter shrink-0"
-            title="Venceu no Shootout"
-          >
-            PEN 👑
-          </span>
+          >PEN 👑</span>
         </button>
+        <span v-if="readOnly" :class="`w-9 h-8 inline-flex items-center justify-center font-mono font-black text-sm rounded-lg shrink-0 ${match.winner === match.away ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100'}`">
+          {{ match.awayScore !== '' ? match.awayScore : '-' }}
+        </span>
         <input
+          v-else
           type="number"
           min="0"
           :disabled="!match.home || !match.away"

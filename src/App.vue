@@ -5,13 +5,14 @@ import {
   MapPin, Plus, Trash2, HelpCircle, Compass, Save, Printer, Download, Upload,
 } from '@lucide/vue'
 import type { Match, KnockoutMatchState, Scorer, TabId, Language, BracketRound, KnockoutSlot } from './types'
-import { TEAMS, GROUPS_CONFIG, STADIUMS, STAR_PLAYERS, STAR_PLAYER_CLUBS, INITIAL_SCORERS, TRANSLATIONS } from './data/constants'
+import { TEAMS, GROUPS_CONFIG, STADIUMS, INITIAL_SCORERS, TRANSLATIONS } from './data/constants'
 import {
-  generateAllMatches, simulateMatchScore, getTeamName,
-  calculateAllStandings, calculateBestThirdPlaces, resolveR32Matchups, resolveKnockoutSlot,
+  generateAllMatches, getTeamName,
+  calculateAllStandings, calculateBestThirdPlaces, resolveKnockoutSlot, buildKnockoutTree,
 } from './utils'
 import TeamFlag from './components/TeamFlag.vue'
 import KnockoutMatchItem from './components/KnockoutMatchItem.vue'
+import SimulationPage from './components/SimulationPage.vue'
 
 // ─── State initializers ───────────────────────────────────────────────────────
 
@@ -50,10 +51,24 @@ function loadScorers(): Scorer[] {
 
 const activeTab = ref<TabId>('groups')
 const language = ref<Language>(loadLanguage())
-const showResetConfirm = ref(false)
 const playerAlertMessage = ref<string | null>(null)
 const importFileRef = ref<HTMLInputElement | null>(null)
 const importSuccessMsg = ref<string | null>(null)
+const showSimulation = ref(false)
+const simulationMode = ref<'groups' | 'full'>('full')
+const confirmDialog = ref<{
+  show: boolean
+  title: string
+  desc: string
+  confirmLabel: string
+  confirmClass: string
+  onConfirm: () => void
+}>({ show: false, title: '', desc: '', confirmLabel: '', confirmClass: '', onConfirm: () => {} })
+
+function openConfirm(opts: { title: string; desc: string; confirmLabel: string; confirmClass: string; onConfirm: () => void }) {
+  confirmDialog.value = { show: true, ...opts }
+}
+function closeConfirm() { confirmDialog.value.show = false }
 const activeGroupFilter = ref('TODOS')
 const mobileBracketRound = ref<BracketRound>('R32')
 const searchScorerQuery = ref('')
@@ -92,107 +107,9 @@ const sortedScorers = computed(() => {
     .sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name))
 })
 
-const knockoutTree = computed(() => {
-  const r32Pairings = resolveR32Matchups(currentStandings.value, bestThirdPlaces.value)
-
-  const r32Stadiums = [
-    'SoFi Stadium, Los Angeles', 'Gillette Stadium, Boston', 'Estadio BBVA, Monterrey',
-    'NRG Stadium, Houston', 'AT&T Stadium, Dallas', 'MetLife Stadium, New Jersey',
-    'Estadio Azteca, Mexico City', 'Mercedes-Benz Stadium, Atlanta', 'Lumen Field, Seattle',
-    "Levi's Stadium, San Francisco", 'SoFi Stadium, Los Angeles', 'BMO Field, Toronto',
-    'BC Place, Vancouver', 'AT&T Stadium, Dallas', 'Hard Rock Stadium, Miami',
-    'Arrowhead Stadium, Kansas City',
-  ]
-  const r32Dates = [
-    '28/06/2026', '29/06/2026', '29/06/2026', '29/06/2026',
-    '30/06/2026', '30/06/2026', '30/06/2026', '01/07/2026',
-    '01/07/2026', '01/07/2026', '02/07/2026', '02/07/2026',
-    '03/07/2026', '03/07/2026', '03/07/2026', '03/07/2026',
-  ]
-  // Horários convertidos para Brasília (BRT, UTC-3) a partir do horário local oficial FIFA de cada estádio
-  const r32Times = [
-    '16:00', '17:30', '22:00', '14:00',
-    '14:00', '18:00', '22:00', '13:00',
-    '17:00', '21:00', '16:00', '20:00',
-    '00:00', '15:00', '19:00', '22:30',
-  ]
-
-  const emptyState = (): KnockoutMatchState => ({ homeScore: '', awayScore: '', penaltyWinner: null })
-
-  const resolvedR32: KnockoutSlot[] = Array.from({ length: 16 }, (_, i) => {
-    const { home, away } = r32Pairings[i] ?? {}
-    return resolveKnockoutSlot(
-      `R32-${i + 1}`, home, away,
-      knockoutScores.value[`R32-${i + 1}`] ?? emptyState(),
-      `1º Grupo`, `Classificado 3º`,
-      r32Dates[i] ?? '28/06/2026', r32Stadiums[i] ?? 'MetLife Stadium, New Jersey', r32Times[i] ?? '18:00',
-    )
-  })
-
-  const r16Stadiums = [
-    'NRG Stadium, Houston', 'Lincoln Financial Field, Philadelphia',
-    'MetLife Stadium, New Jersey', 'Estadio Azteca, Mexico City',
-    'AT&T Stadium, Dallas', 'Lumen Field, Seattle',
-    'Mercedes-Benz Stadium, Atlanta', 'BC Place, Vancouver',
-  ]
-  const r16Dates = [
-    '04/07/2026', '04/07/2026', '05/07/2026', '05/07/2026',
-    '06/07/2026', '06/07/2026', '07/07/2026', '07/07/2026',
-  ]
-  const r16Times = ['14:00', '18:00', '17:00', '21:00', '16:00', '21:00', '13:00', '17:00']
-  const resolvedR16: KnockoutSlot[] = Array.from({ length: 8 }, (_, i) =>
-    resolveKnockoutSlot(
-      `R16-${i + 1}`,
-      resolvedR32[2 * i]?.winner, resolvedR32[2 * i + 1]?.winner,
-      knockoutScores.value[`R16-${i + 1}`] ?? emptyState(),
-      `Venc. R32 M${2 * i + 1}`, `Venc. R32 M${2 * i + 2}`,
-      r16Dates[i] ?? '04/07/2026', r16Stadiums[i] ?? 'MetLife Stadium, New Jersey', r16Times[i] ?? '18:00',
-    ),
-  )
-
-  const qfStadiums = [
-    'Gillette Stadium, Boston', 'SoFi Stadium, Los Angeles',
-    'Hard Rock Stadium, Miami', 'Arrowhead Stadium, Kansas City',
-  ]
-  const qfDates = ['09/07/2026', '10/07/2026', '11/07/2026', '11/07/2026']
-  const qfTimes = ['17:00', '16:00', '18:00', '22:00']
-  const resolvedQF: KnockoutSlot[] = Array.from({ length: 4 }, (_, i) =>
-    resolveKnockoutSlot(
-      `QF-${i + 1}`,
-      resolvedR16[2 * i]?.winner, resolvedR16[2 * i + 1]?.winner,
-      knockoutScores.value[`QF-${i + 1}`] ?? emptyState(),
-      `Venc. Oitavas M${2 * i + 1}`, `Venc. Oitavas M${2 * i + 2}`,
-      qfDates[i] ?? '09/07/2026', qfStadiums[i] ?? 'MetLife Stadium, New Jersey', qfTimes[i] ?? '18:00',
-    ),
-  )
-
-  const sfStadiums = ['AT&T Stadium, Dallas', 'Mercedes-Benz Stadium, Atlanta']
-  const resolvedSF: KnockoutSlot[] = Array.from({ length: 2 }, (_, i) =>
-    resolveKnockoutSlot(
-      `SF-${i + 1}`,
-      resolvedQF[2 * i]?.winner, resolvedQF[2 * i + 1]?.winner,
-      knockoutScores.value[`SF-${i + 1}`] ?? emptyState(),
-      `Venc. Quartas M${2 * i + 1}`, `Venc. Quartas M${2 * i + 2}`,
-      i === 0 ? '14/07/2026' : '15/07/2026', sfStadiums[i], '16:00',
-    ),
-  )
-
-  const tpState = knockoutScores.value['TP-1'] ?? emptyState()
-  const resolvedTP = resolveKnockoutSlot(
-    'TP-1', resolvedSF[0]?.loser, resolvedSF[1]?.loser, tpState,
-    'Perdedor Semifinal 1', 'Perdedor Semifinal 2',
-    '18/07/2026', 'Hard Rock Stadium, Miami', '18:00',
-  )
-
-  const fState = knockoutScores.value['F-1'] ?? emptyState()
-  const resolvedF = resolveKnockoutSlot(
-    'F-1', resolvedSF[0]?.winner, resolvedSF[1]?.winner, fState,
-    'Vencedor Semifinal 1', 'Vencedor Semifinal 2',
-    '19/07/2026', 'MetLife Stadium, New York/New Jersey', '16:00',
-  )
-
-  return { R32: resolvedR32, R16: resolvedR16, QF: resolvedQF, SF: resolvedSF, TP: resolvedTP, F: resolvedF }
-})
+const knockoutTree = computed(() =>
+  buildKnockoutTree(knockoutScores.value, currentStandings.value, bestThirdPlaces.value)
+)
 
 // ─── Navigation tabs data ─────────────────────────────────────────────────────
 
@@ -309,86 +226,86 @@ function saveKnockoutScore(id: string) {
   delete unsavedKnockoutIds.value[id]
 }
 
-function simulateGroupStage() {
-  Object.keys(matches.value).forEach(id => {
-    const m = matches.value[id]
-    const [hSc, aSc] = simulateMatchScore(TEAMS[m.home]?.ranking ?? 50, TEAMS[m.away]?.ranking ?? 50)
-    m.homeScore = hSc; m.awayScore = aSc
-    if (hSc > 0) addSimulatedGoals(m.home, hSc)
-    if (aSc > 0) addSimulatedGoals(m.away, aSc)
+function confirmSimulateGroups() {
+  openConfirm({
+    title: t.value.simGroupsTitle,
+    desc: t.value.simGroupsDesc,
+    confirmLabel: t.value.simGroupsBtn,
+    confirmClass: 'bg-blue-600 hover:bg-blue-700 text-white',
+    onConfirm: () => { simulationMode.value = 'groups'; showSimulation.value = true; closeConfirm() },
   })
 }
 
-function simulateEntireTournament() {
-  simulateGroupStage()
+function confirmSimulateFull() {
+  openConfirm({
+    title: t.value.simFullTitle,
+    desc: t.value.simFullDesc,
+    confirmLabel: t.value.simFullBtn,
+    confirmClass: 'gradient-gold-bg hover:opacity-90 text-slate-950',
+    onConfirm: () => { simulationMode.value = 'full'; showSimulation.value = true; closeConfirm() },
+  })
+}
 
-  const freshStandings = calculateAllStandings(matches.value)
-  const freshThirds = calculateBestThirdPlaces(freshStandings)
-  const r32Teams = resolveR32Matchups(freshStandings, freshThirds)
-  const next: Record<string, KnockoutMatchState> = {}
+function confirmReset() {
+  openConfirm({
+    title: t.value.resetTitle,
+    desc: t.value.resetConfirm,
+    confirmLabel: t.value.yesReset,
+    confirmClass: 'bg-red-600 hover:bg-red-700 text-white',
+    onConfirm: () => { executeReset(); closeConfirm() },
+  })
+}
 
-  const getWinner = (id: string, home?: string, away?: string) => {
-    const m = next[id]; if (!m || !home || !away) return undefined
-    const { homeScore: h, awayScore: a, penaltyWinner: p } = m
-    if (h === '' || a === '') return undefined
-    return h > a ? home : h < a ? away : p === 'home' ? home : p === 'away' ? away : undefined
-  }
-  const getLoser = (id: string, home?: string, away?: string) => {
-    const m = next[id]; if (!m || !home || !away) return undefined
-    const { homeScore: h, awayScore: a, penaltyWinner: p } = m
-    if (h === '' || a === '') return undefined
-    return h > a ? away : h < a ? home : p === 'home' ? away : p === 'away' ? home : undefined
-  }
+function confirmPdf() {
+  openConfirm({
+    title: t.value.pdfTitle,
+    desc: t.value.pdfDesc,
+    confirmLabel: t.value.pdfBtn,
+    confirmClass: 'bg-amber-500 hover:bg-amber-600 text-slate-950',
+    onConfirm: () => {
+      const a = document.createElement('a')
+      a.href = '/tabela_copa_2026.pdf'
+      a.download = 'tabela_copa_2026.pdf'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      closeConfirm()
+    },
+  })
+}
 
-  const simMatch = (id: string, home?: string, away?: string) => {
-    if (!home || !away) return
-    const [h, a] = simulateMatchScore(TEAMS[home]?.ranking ?? 50, TEAMS[away]?.ranking ?? 50)
-    const pen = h === a ? (Math.random() > 0.5 ? 'home' : 'away') as 'home' | 'away' : null
-    next[id] = { homeScore: h, awayScore: a, penaltyWinner: pen }
-    if (h > 0) addSimulatedGoals(home, h)
-    if (a > 0) addSimulatedGoals(away, a)
-  }
+function confirmExport() {
+  openConfirm({
+    title: t.value.exportTitle,
+    desc: t.value.exportDesc,
+    confirmLabel: t.value.exportConfirmBtn,
+    confirmClass: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+    onConfirm: () => { exportData(); closeConfirm() },
+  })
+}
 
-  for (let i = 0; i < 16; i++) simMatch(`R32-${i + 1}`, r32Teams[i]?.home, r32Teams[i]?.away)
-
-  const r16Teams = Array.from({ length: 8 }, (_, i) => ({
-    home: getWinner(`R32-${2*i+1}`, r32Teams[2*i]?.home, r32Teams[2*i]?.away),
-    away: getWinner(`R32-${2*i+2}`, r32Teams[2*i+1]?.home, r32Teams[2*i+1]?.away),
-  }))
-  for (let i = 0; i < 8; i++) simMatch(`R16-${i + 1}`, r16Teams[i].home, r16Teams[i].away)
-
-  const qfTeams = Array.from({ length: 4 }, (_, i) => ({
-    home: getWinner(`R16-${2*i+1}`, r16Teams[2*i]?.home, r16Teams[2*i]?.away),
-    away: getWinner(`R16-${2*i+2}`, r16Teams[2*i+1]?.home, r16Teams[2*i+1]?.away),
-  }))
-  for (let i = 0; i < 4; i++) simMatch(`QF-${i + 1}`, qfTeams[i].home, qfTeams[i].away)
-
-  const sfTeams = Array.from({ length: 2 }, (_, i) => ({
-    home: getWinner(`QF-${2*i+1}`, qfTeams[2*i]?.home, qfTeams[2*i]?.away),
-    away: getWinner(`QF-${2*i+2}`, qfTeams[2*i+1]?.home, qfTeams[2*i+1]?.away),
-  }))
-  for (let i = 0; i < 2; i++) simMatch(`SF-${i + 1}`, sfTeams[i].home, sfTeams[i].away)
-
-  simMatch('F-1',
-    getWinner('SF-1', sfTeams[0]?.home, sfTeams[0]?.away),
-    getWinner('SF-2', sfTeams[1]?.home, sfTeams[1]?.away),
-  )
-  simMatch('TP-1',
-    getLoser('SF-1', sfTeams[0]?.home, sfTeams[0]?.away),
-    getLoser('SF-2', sfTeams[1]?.home, sfTeams[1]?.away),
-  )
-
-  knockoutScores.value = next
-  activeTab.value = 'knockout'
+function confirmImport() {
+  openConfirm({
+    title: t.value.importTitle,
+    desc: t.value.importDesc,
+    confirmLabel: t.value.importConfirmBtn,
+    confirmClass: 'bg-blue-600 hover:bg-blue-700 text-white',
+    onConfirm: () => { closeConfirm(); importFileRef.value?.click() },
+  })
 }
 
 function exportData() {
+  const matchesExport: Record<string, { homeScore: number | ''; awayScore: number | '' }> = {}
+  Object.entries(matches.value).forEach(([id, m]) => {
+    if (m.homeScore !== '' || m.awayScore !== '')
+      matchesExport[id] = { homeScore: m.homeScore, awayScore: m.awayScore }
+  })
   const data = {
     version: '1',
     exportedAt: new Date().toISOString(),
-    matches: localStorage.getItem('wc2026_user_saved_matches'),
-    knockout: localStorage.getItem('wc2026_user_saved_knockout'),
-    scorers: localStorage.getItem('wc2026_user_saved_scorers'),
+    matches: JSON.stringify(matchesExport),
+    knockout: JSON.stringify(knockoutScores.value),
+    scorers: JSON.stringify(scorers.value),
   }
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -433,7 +350,6 @@ function executeReset() {
   activeGroupFilter.value = 'TODOS'
   unsavedMatchIds.value = {}
   unsavedKnockoutIds.value = {}
-  showResetConfirm.value = false
 }
 
 function handleAddPlayer(e: Event) {
@@ -529,11 +445,11 @@ function deleteScorer(player: { name: string; team: string }) {
 
           <!-- Row 1: Simulate buttons -->
           <div class="flex items-center justify-center gap-1.5 w-full sm:w-auto">
-            <button @click="simulateGroupStage" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/15 rounded-lg text-xs font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm whitespace-nowrap" title="Simula todos os jogos de grupos">
+            <button @click="confirmSimulateGroups" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/15 rounded-lg text-xs font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm whitespace-nowrap" :title="t.simGroups">
               <Compass class="w-3.5 h-3.5 text-blue-300" aria-hidden="true" />
               <span>{{ t.simGroups }}</span>
             </button>
-            <button @click="simulateEntireTournament" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 sm:py-1.5 gradient-gold-bg hover:opacity-90 text-slate-950 rounded-lg text-xs font-extrabold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-lg cursor-pointer whitespace-nowrap shadow-amber-500/10" title="Simula a Copa inteira">
+            <button @click="confirmSimulateFull" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 sm:py-1.5 gradient-gold-bg hover:opacity-90 text-slate-950 rounded-lg text-xs font-extrabold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-lg cursor-pointer whitespace-nowrap shadow-amber-500/10" :title="t.simFull">
               <Trophy class="w-3.5 h-3.5 text-blue-900" aria-hidden="true" />
               <span class="text-blue-950">{{ t.simFull }}</span>
             </button>
@@ -541,19 +457,19 @@ function deleteScorer(player: { name: string; team: string }) {
 
           <!-- Row 2: Reset + PDF + Export + Import -->
           <div class="flex items-center justify-center gap-1.5 w-full sm:w-auto">
-            <button @click="showResetConfirm = true" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-white/5 hover:bg-red-500/20 hover:text-red-200 border border-white/10 rounded-lg text-xs font-bold transition-all active:scale-95 whitespace-nowrap" :title="t.resetBtn">
+            <button @click="confirmReset" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-white/5 hover:bg-red-500/20 hover:text-red-200 border border-white/10 rounded-lg text-xs font-bold transition-all active:scale-95 whitespace-nowrap" :title="t.resetBtn">
               <RefreshCw class="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
               <span>{{ t.resetBtn }}</span>
             </button>
-            <a href="/tabela_copa_2026.pdf" download="tabela_copa_2026.pdf" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold border border-amber-400 rounded-lg text-xs transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap" title="Baixar PDF da tabela">
+            <button @click="confirmPdf" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold border border-amber-400 rounded-lg text-xs transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap" :title="t.pdfTitle">
               <Printer class="w-3.5 h-3.5 text-slate-950" aria-hidden="true" />
               <span>PDF</span>
-            </a>
-            <button @click="exportData" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 rounded-lg text-xs font-bold transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap" :title="t.exportBtn">
+            </button>
+            <button @click="confirmExport" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500 rounded-lg text-xs font-bold transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap" :title="t.exportBtn">
               <Download class="w-3.5 h-3.5" aria-hidden="true" />
               <span>{{ t.exportBtn }}</span>
             </button>
-            <button @click="importFileRef?.click()" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/15 rounded-lg text-xs font-bold transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap" :title="t.importBtn">
+            <button @click="confirmImport" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/15 rounded-lg text-xs font-bold transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap" :title="t.importBtn">
               <Upload class="w-3.5 h-3.5" aria-hidden="true" />
               <span>{{ t.importBtn }}</span>
             </button>
@@ -1119,24 +1035,74 @@ function deleteScorer(player: { name: string; team: string }) {
       </button>
     </footer>
 
-    <!-- ─── RESET MODAL ────────────────────────────────────────────────────── -->
-    <div
-      v-if="showResetConfirm"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="reset-modal-title"
-      aria-describedby="reset-modal-desc"
-      class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
+    <!-- ─── CONFIRM MODAL (genérico) ───────────────────────────────────────── -->
+    <Transition
+      enter-active-class="transition-all duration-200"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-all duration-150"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
     >
-      <div class="bg-white border border-slate-200 rounded-3xl p-6 max-w-md w-full shadow-2xl relative">
-        <h3 id="reset-modal-title" class="text-lg font-display font-extrabold text-[#111827] mb-2 tracking-tight">{{ t.resetTitle }}</h3>
-        <p id="reset-modal-desc" class="text-sm text-slate-500 mb-6 leading-relaxed">{{ t.resetConfirm }}</p>
-        <div class="flex justify-end gap-3">
-          <button type="button" @click="showResetConfirm = false" class="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer">{{ t.cancel }}</button>
-          <button type="button" @click="executeReset" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-black shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer">{{ t.yesReset }}</button>
-        </div>
+      <div
+        v-if="confirmDialog.show"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        aria-describedby="confirm-modal-desc"
+        class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-sm"
+        @click.self="closeConfirm"
+      >
+        <Transition
+          enter-active-class="transition-all duration-200"
+          enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+          enter-to-class="opacity-100 translate-y-0 sm:scale-100"
+          appear
+        >
+          <div class="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md shadow-2xl">
+            <h3 id="confirm-modal-title" class="text-lg font-display font-extrabold text-slate-900 mb-2 tracking-tight">
+              {{ confirmDialog.title }}
+            </h3>
+            <p id="confirm-modal-desc" class="text-sm text-slate-500 leading-relaxed mb-6">
+              {{ confirmDialog.desc }}
+            </p>
+            <div class="flex justify-end gap-3">
+              <button
+                type="button"
+                @click="closeConfirm"
+                class="px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                {{ t.cancel }}
+              </button>
+              <button
+                type="button"
+                @click="confirmDialog.onConfirm()"
+                :class="`px-5 py-2.5 rounded-xl text-xs font-black shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer ${confirmDialog.confirmClass}`"
+              >
+                {{ confirmDialog.confirmLabel }}
+              </button>
+            </div>
+          </div>
+        </Transition>
       </div>
-    </div>
+    </Transition>
+
+    <!-- ─── SIMULATION PAGE ─────────────────────────────────────────────────── -->
+    <Transition
+      enter-active-class="transition-all duration-300"
+      enter-from-class="opacity-0 translate-y-4"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition-all duration-200"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <SimulationPage
+        v-if="showSimulation"
+        :mode="simulationMode"
+        :language="language"
+        @close="showSimulation = false"
+      />
+    </Transition>
 
   </div>
 </template>
