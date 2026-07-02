@@ -69,7 +69,7 @@ export const TEAMS: Record<string, Team> = {
   },
   "SCO": {
     "name": "Esc\u00f3cia",
-    "flag": "\ud83c\udff4\u200d\udb40\udc61\udb40\udc69\udb40\udc72\udb40\udc7f",
+    "flag": "\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc73\udb40\udc63\udb40\udc74\udb40\udc7f",
     "code": "SCO",
     "ranking": 39
   },
@@ -267,7 +267,7 @@ export const TEAMS: Record<string, Team> = {
   },
   "ENG": {
     "name": "Inglaterra",
-    "flag": "\ud83c\udff4\u200d\udb40\udc61\udb40\udc69\udb40\udc72\udb40\udc7f",
+    "flag": "\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f",
     "code": "ENG",
     "ranking": 4
   },
