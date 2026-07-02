@@ -80,6 +80,68 @@ export function calculateBestThirdPlaces(allStandings: Record<string, GroupStand
   )
 }
 
+// Cada uma das 8 vagas de "3º colocado" nos 16-avos só pode ser ocupada por um
+// terceiro de um subconjunto fixo de grupos (regra oficial da FIFA, Anexo C do
+// regulamento). Ex.: a vaga que enfrenta o 1ºE só aceita um 3º dos grupos
+// A, B, C, D ou F — nunca o 3º de qualquer outro grupo.
+const R32_THIRD_SLOTS: Array<{ idx: number; winnerGroup: string; allowed: string[] }> = [
+  { idx: 0, winnerGroup: 'E', allowed: ['A', 'B', 'C', 'D', 'F'] },   // R32-1
+  { idx: 1, winnerGroup: 'I', allowed: ['C', 'D', 'F', 'G', 'H'] },   // R32-2
+  { idx: 6, winnerGroup: 'D', allowed: ['B', 'E', 'F', 'I', 'J'] },   // R32-7
+  { idx: 7, winnerGroup: 'G', allowed: ['A', 'E', 'H', 'I', 'J'] },   // R32-8
+  { idx: 10, winnerGroup: 'A', allowed: ['C', 'E', 'F', 'H', 'I'] },  // R32-11
+  { idx: 11, winnerGroup: 'L', allowed: ['E', 'H', 'I', 'J', 'K'] },  // R32-12
+  { idx: 14, winnerGroup: 'B', allowed: ['E', 'F', 'G', 'I', 'J'] },  // R32-15
+  { idx: 15, winnerGroup: 'K', allowed: ['D', 'E', 'I', 'J', 'L'] },  // R32-16
+]
+
+// A FIFA nunca divulgou a tabela completa das 495 combinações (Anexo C) em
+// formato reaproveitável; o que existe é uma tabela fixa "combinação → vagas".
+// Essa é a combinação que de fato ocorreu na Copa de 2026 (grupos B,D,E,F,I,J,K,L
+// como os 8 melhores terceiros), confirmada com os jogos reais dos 16-avos:
+// Alemanha×Paraguai, França×Suécia, EUA×Bósnia, Bélgica×Senegal, México×Equador,
+// Inglaterra×RD Congo, Suíça×Argélia, Colômbia×Gana. Mapeia grupo do 3º → grupo do adversário (1º).
+const KNOWN_REAL_THIRDS_ASSIGNMENT: Record<string, string> = {
+  D: 'E', F: 'I', B: 'D', I: 'G', E: 'A', K: 'L', J: 'B', L: 'K',
+}
+const KNOWN_REAL_THIRDS_COMBO = ['B', 'D', 'E', 'F', 'I', 'J', 'K', 'L'].join('')
+
+function assignThirdsToSlots(qualifiedGroups: string[]): Record<string, string> {
+  const sortedCombo = [...qualifiedGroups].sort().join('')
+  if (sortedCombo === KNOWN_REAL_THIRDS_COMBO) {
+    const result: Record<string, string> = {}
+    Object.entries(KNOWN_REAL_THIRDS_ASSIGNMENT).forEach(([thirdGroup, winnerGroup]) => {
+      result[winnerGroup] = thirdGroup
+    })
+    return result
+  }
+  // Sem a tabela oficial completa, resolve por backtracking (vaga mais restrita
+  // primeiro) para garantir só que nenhum 3º cai contra o próprio grupo — não
+  // há garantia de bater exatamente com o sorteio real da FIFA nesse cenário.
+  const used = new Set<string>()
+  const out: (string | null)[] = Array(R32_THIRD_SLOTS.length).fill(null)
+  const order = R32_THIRD_SLOTS
+    .map((slot, i) => ({ i, allowed: slot.allowed.filter(g => qualifiedGroups.includes(g)) }))
+    .sort((a, b) => a.allowed.length - b.allowed.length)
+  const backtrack = (k: number): boolean => {
+    if (k === order.length) return true
+    const { i, allowed } = order[k]
+    for (const g of allowed) {
+      if (used.has(g)) continue
+      used.add(g); out[i] = g
+      if (backtrack(k + 1)) return true
+      used.delete(g); out[i] = null
+    }
+    return false
+  }
+  backtrack(0)
+  const result: Record<string, string> = {}
+  R32_THIRD_SLOTS.forEach((slot, i) => {
+    if (out[i]) result[slot.winnerGroup] = out[i] as string
+  })
+  return result
+}
+
 export function resolveR32Matchups(
   standings: Record<string, GroupStanding[]>,
   thirds: ThirdPlaceRank[],
@@ -90,24 +152,31 @@ export function resolveR32Matchups(
     winners[g] = arr[0]?.code
     runners[g] = arr[1]?.code
   })
-  const get3rd = (i: number) => thirds[i]?.code
+  const qualifiedThirds = thirds.slice(0, 8)
+  const codeByGroup: Record<string, string> = {}
+  qualifiedThirds.forEach(t => { codeByGroup[t.group] = t.code })
+  const winnerGroupToThirdGroup = assignThirdsToSlots(qualifiedThirds.map(t => t.group))
+  const get3rdFor = (winnerGroup: string) => {
+    const thirdGroup = winnerGroupToThirdGroup[winnerGroup]
+    return thirdGroup ? codeByGroup[thirdGroup] : undefined
+  }
   return [
-    { home: winners['E'], away: get3rd(0) },    // R32-1:  Alemanha × 3º (grupos A,B,C,D,F)
-    { home: winners['I'], away: get3rd(1) },    // R32-2:  França × 3º (grupos C,D,F,G,H)
-    { home: runners['A'], away: runners['B'] }, // R32-3:  2ºA × 2ºB
-    { home: winners['F'], away: runners['C'] }, // R32-4:  1ºF × 2ºC
-    { home: runners['K'], away: runners['L'] }, // R32-5:  2ºK × 2ºL
-    { home: winners['H'], away: runners['J'] }, // R32-6:  1ºH × 2ºJ
-    { home: winners['D'], away: get3rd(4) },    // R32-7:  1ºD × 3º (grupos B,E,F,I,J)
-    { home: winners['G'], away: get3rd(5) },    // R32-8:  1ºG × 3º (grupos A,E,H,I,J)
-    { home: winners['C'], away: runners['F'] }, // R32-9:  1ºC × 2ºF
-    { home: runners['E'], away: runners['I'] }, // R32-10: 2ºE × 2ºI
-    { home: winners['A'], away: get3rd(2) },    // R32-11: 1ºA × 3º (grupos C,E,F,H,I)
-    { home: winners['L'], away: get3rd(3) },    // R32-12: 1ºL × 3º (grupos E,H,I,J,K)
-    { home: winners['J'], away: runners['H'] }, // R32-13: 1ºJ × 2ºH
-    { home: runners['D'], away: runners['G'] }, // R32-14: 2ºD × 2ºG
-    { home: winners['B'], away: get3rd(6) },    // R32-15: 1ºB × 3º
-    { home: winners['K'], away: get3rd(7) },    // R32-16: 1ºK × 3º
+    { home: winners['E'], away: get3rdFor('E') },  // R32-1:  Alemanha × 3º (grupos A,B,C,D,F)
+    { home: winners['I'], away: get3rdFor('I') },  // R32-2:  França × 3º (grupos C,D,F,G,H)
+    { home: runners['A'], away: runners['B'] },    // R32-3:  2ºA × 2ºB
+    { home: winners['F'], away: runners['C'] },    // R32-4:  1ºF × 2ºC
+    { home: runners['K'], away: runners['L'] },    // R32-5:  2ºK × 2ºL
+    { home: winners['H'], away: runners['J'] },    // R32-6:  1ºH × 2ºJ
+    { home: winners['D'], away: get3rdFor('D') },  // R32-7:  1ºD × 3º (grupos B,E,F,I,J)
+    { home: winners['G'], away: get3rdFor('G') },  // R32-8:  1ºG × 3º (grupos A,E,H,I,J)
+    { home: winners['C'], away: runners['F'] },    // R32-9:  1ºC × 2ºF
+    { home: runners['E'], away: runners['I'] },    // R32-10: 2ºE × 2ºI
+    { home: winners['A'], away: get3rdFor('A') },  // R32-11: 1ºA × 3º (grupos C,E,F,H,I)
+    { home: winners['L'], away: get3rdFor('L') },  // R32-12: 1ºL × 3º (grupos E,H,I,J,K)
+    { home: winners['J'], away: runners['H'] },    // R32-13: 1ºJ × 2ºH
+    { home: runners['D'], away: runners['G'] },    // R32-14: 2ºD × 2ºG
+    { home: winners['B'], away: get3rdFor('B') },  // R32-15: 1ºB × 3º (grupos E,F,G,I,J)
+    { home: winners['K'], away: get3rdFor('K') },  // R32-16: 1ºK × 3º (grupos D,E,I,J,L)
   ]
 }
 
