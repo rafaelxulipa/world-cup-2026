@@ -8,6 +8,7 @@ import {
 import {
   generateAllMatches, simulateMatchScore, getTeamName,
   calculateAllStandings, calculateBestThirdPlaces, resolveR32Matchups, buildKnockoutTree,
+  simulatePenaltyShootout,
 } from '../utils'
 import KnockoutMatchItem from './KnockoutMatchItem.vue'
 import TeamFlag from './TeamFlag.vue'
@@ -86,8 +87,14 @@ function simulateFull() {
   const simMatch = (id: string, home?: string, away?: string) => {
     if (!home || !away) return
     const [h, a] = simulateMatchScore(TEAMS[home]?.ranking ?? 50, TEAMS[away]?.ranking ?? 50)
-    const pen = h === a ? (Math.random() > 0.5 ? 'home' : 'away') as 'home' | 'away' : null
-    next[id] = { homeScore: h, awayScore: a, penaltyWinner: pen }
+    if (h === a) {
+      const { homeScore: ph, awayScore: pa, winner } = simulatePenaltyShootout()
+      next[id] = {
+        homeScore: h, awayScore: a, penaltyWinner: winner, penaltyHomeScore: ph, penaltyAwayScore: pa,
+      }
+    } else {
+      next[id] = { homeScore: h, awayScore: a, penaltyWinner: null, penaltyHomeScore: '', penaltyAwayScore: '' }
+    }
     if (h > 0) addGoals(home, h)
     if (a > 0) addGoals(away, a)
   }
@@ -231,7 +238,9 @@ function rowBadge(index: number, code: string) {
             <p class="text-xs text-slate-400 mt-1">
               {{ language === 'en' ? 'Final' : 'Grande Final' }} •
               {{ tree.F.homeScore }} × {{ tree.F.awayScore }}
-              <span v-if="tree.F.penaltyWinner"> (PEN)</span>
+              <span v-if="tree.F.penaltyWinner" class="inline-flex items-center gap-1">
+                (<span class="text-sm">{{ TEAMS[tree.F.home ?? '']?.flag }}</span>{{ tree.F.penaltyHomeScore }}-{{ tree.F.penaltyAwayScore }}<span class="text-sm">{{ TEAMS[tree.F.away ?? '']?.flag }}</span> PEN)
+              </span>
               • MetLife Stadium
             </p>
           </div>

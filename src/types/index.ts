@@ -39,6 +39,8 @@ export interface KnockoutMatchState {
   homeScore: number | ''
   awayScore: number | ''
   penaltyWinner: PenaltySide
+  penaltyHomeScore: number | ''
+  penaltyAwayScore: number | ''
 }
 
 export interface KnockoutSlot {
@@ -50,6 +52,8 @@ export interface KnockoutSlot {
   homeScore: number | ''
   awayScore: number | ''
   penaltyWinner: PenaltySide
+  penaltyHomeScore: number | ''
+  penaltyAwayScore: number | ''
   winner?: string
   loser?: string
   date: string

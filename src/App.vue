@@ -200,9 +200,13 @@ function saveMatchScore(id: string) {
   delete unsavedMatchIds.value[id]
 }
 
+const emptyKnockoutState = (): KnockoutMatchState => ({
+  homeScore: '', awayScore: '', penaltyWinner: null, penaltyHomeScore: '', penaltyAwayScore: '',
+})
+
 function updateKnockoutScore(id: string, side: 'homeScore' | 'awayScore', value: string) {
   const numValue = value === '' ? '' : Math.max(0, parseInt(value, 10))
-  const current = knockoutScores.value[id] ?? { homeScore: '', awayScore: '', penaltyWinner: null }
+  const current = knockoutScores.value[id] ?? emptyKnockoutState()
   const other = side === 'homeScore' ? current.awayScore : current.homeScore
   const penalty = numValue !== '' && other !== '' && numValue !== other ? null : current.penaltyWinner
   knockoutScores.value[id] = { ...current, [side]: numValue as number | '', penaltyWinner: penalty }
@@ -210,17 +214,32 @@ function updateKnockoutScore(id: string, side: 'homeScore' | 'awayScore', value:
 }
 
 function setKnockoutPenalty(id: string, side: 'home' | 'away') {
-  const current = knockoutScores.value[id] ?? { homeScore: '', awayScore: '', penaltyWinner: null }
+  const current = knockoutScores.value[id] ?? emptyKnockoutState()
   knockoutScores.value[id] = { ...current, penaltyWinner: current.penaltyWinner === side ? null : side }
   unsavedKnockoutIds.value[id] = true
 }
 
+function updateKnockoutPenaltyScore(id: string, side: 'penaltyHomeScore' | 'penaltyAwayScore', value: string) {
+  const numValue = value === '' ? '' : Math.max(0, parseInt(value, 10))
+  const current = knockoutScores.value[id] ?? emptyKnockoutState()
+  const updated: KnockoutMatchState = { ...current, [side]: numValue as number | '' }
+  const { penaltyHomeScore: home, penaltyAwayScore: away } = updated
+  if (home !== '' && away !== '' && home !== away) {
+    updated.penaltyWinner = home > away ? 'home' : 'away'
+  }
+  knockoutScores.value[id] = updated
+  unsavedKnockoutIds.value[id] = true
+}
+
 function saveKnockoutScore(id: string) {
-  const match = knockoutScores.value[id] ?? { homeScore: '', awayScore: '', penaltyWinner: null }
+  const match = knockoutScores.value[id] ?? emptyKnockoutState()
   try {
     const saved = localStorage.getItem('wc2026_user_saved_knockout')
     const obj = saved ? JSON.parse(saved) : {}
-    obj[id] = { homeScore: match.homeScore, awayScore: match.awayScore, penaltyWinner: match.penaltyWinner }
+    obj[id] = {
+      homeScore: match.homeScore, awayScore: match.awayScore, penaltyWinner: match.penaltyWinner,
+      penaltyHomeScore: match.penaltyHomeScore, penaltyAwayScore: match.penaltyAwayScore,
+    }
     localStorage.setItem('wc2026_user_saved_knockout', JSON.stringify(obj))
   } catch { /* ignore */ }
   delete unsavedKnockoutIds.value[id]
@@ -826,7 +845,7 @@ function deleteScorer(player: { name: string; team: string }) {
                 <span class="text-[10px] text-slate-400 mt-0.5 block">16 {{ language === 'en' ? 'matches' : 'partidas' }} • 30 {{ language === 'en' ? 'June' : language === 'es' ? 'Junio' : 'Junho' }}</span>
               </div>
               <div class="space-y-4">
-                <KnockoutMatchItem v-for="match in knockoutTree.R32" :key="match.matchId" :match="match" :is-unsaved="!!unsavedKnockoutIds[match.matchId]" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @save="saveKnockoutScore" />
+                <KnockoutMatchItem v-for="match in knockoutTree.R32" :key="match.matchId" :match="match" :is-unsaved="!!unsavedKnockoutIds[match.matchId]" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @penalty-score-change="updateKnockoutPenaltyScore" @save="saveKnockoutScore" />
               </div>
             </div>
 
@@ -840,7 +859,7 @@ function deleteScorer(player: { name: string; team: string }) {
                 <span class="text-[10px] text-slate-400 mt-0.5 block">8 {{ language === 'en' ? 'matches' : 'partidas' }} • 05 {{ language === 'en' ? 'July' : language === 'es' ? 'Julio' : 'Julho' }}</span>
               </div>
               <div class="space-y-4 md:space-y-24">
-                <KnockoutMatchItem v-for="match in knockoutTree.R16" :key="match.matchId" :match="match" :is-unsaved="!!unsavedKnockoutIds[match.matchId]" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @save="saveKnockoutScore" />
+                <KnockoutMatchItem v-for="match in knockoutTree.R16" :key="match.matchId" :match="match" :is-unsaved="!!unsavedKnockoutIds[match.matchId]" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @penalty-score-change="updateKnockoutPenaltyScore" @save="saveKnockoutScore" />
               </div>
             </div>
 
@@ -854,7 +873,7 @@ function deleteScorer(player: { name: string; team: string }) {
                 <span class="text-[10px] text-slate-400 mt-0.5 block">4 {{ language === 'en' ? 'matches' : 'partidas' }} • 09 {{ language === 'en' ? 'July' : language === 'es' ? 'Julio' : 'Julho' }}</span>
               </div>
               <div class="space-y-4 md:space-y-64">
-                <KnockoutMatchItem v-for="match in knockoutTree.QF" :key="match.matchId" :match="match" :is-unsaved="!!unsavedKnockoutIds[match.matchId]" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @save="saveKnockoutScore" />
+                <KnockoutMatchItem v-for="match in knockoutTree.QF" :key="match.matchId" :match="match" :is-unsaved="!!unsavedKnockoutIds[match.matchId]" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @penalty-score-change="updateKnockoutPenaltyScore" @save="saveKnockoutScore" />
               </div>
             </div>
 
@@ -868,7 +887,7 @@ function deleteScorer(player: { name: string; team: string }) {
                 <span class="text-[10px] text-slate-400 mt-0.5 block">2 {{ language === 'en' ? 'matches' : 'partidas' }} • 14 {{ language === 'en' ? 'July' : language === 'es' ? 'Julio' : 'Julho' }}</span>
               </div>
               <div class="space-y-4 md:space-y-[450px]">
-                <KnockoutMatchItem v-for="match in knockoutTree.SF" :key="match.matchId" :match="match" :is-unsaved="!!unsavedKnockoutIds[match.matchId]" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @save="saveKnockoutScore" />
+                <KnockoutMatchItem v-for="match in knockoutTree.SF" :key="match.matchId" :match="match" :is-unsaved="!!unsavedKnockoutIds[match.matchId]" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @penalty-score-change="updateKnockoutPenaltyScore" @save="saveKnockoutScore" />
               </div>
             </div>
 
@@ -888,12 +907,12 @@ function deleteScorer(player: { name: string; team: string }) {
               <!-- Grand Final -->
               <div class="space-y-3 border-b border-slate-200/50 pb-5 mb-5">
                 <div class="bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 text-[10px] text-center font-extrabold uppercase py-1.5 px-3 rounded-xl tracking-widest shadow-sm">🏆 {{ t.f }}</div>
-                <KnockoutMatchItem :match="knockoutTree.F" :is-emphasized="true" :is-unsaved="!!unsavedKnockoutIds['F-1']" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @save="saveKnockoutScore" />
+                <KnockoutMatchItem :match="knockoutTree.F" :is-emphasized="true" :is-unsaved="!!unsavedKnockoutIds['F-1']" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @penalty-score-change="updateKnockoutPenaltyScore" @save="saveKnockoutScore" />
               </div>
               <!-- 3rd Place -->
               <div class="space-y-3">
                 <div class="bg-slate-100 border border-slate-200 text-slate-500 text-[10px] text-center font-bold uppercase py-1.5 px-3 rounded-xl tracking-widest">🥉 {{ t.tp }}</div>
-                <KnockoutMatchItem :match="knockoutTree.TP" :is-unsaved="!!unsavedKnockoutIds['TP-1']" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @save="saveKnockoutScore" />
+                <KnockoutMatchItem :match="knockoutTree.TP" :is-unsaved="!!unsavedKnockoutIds['TP-1']" @score-change="updateKnockoutScore" @set-penalty="setKnockoutPenalty" @penalty-score-change="updateKnockoutPenaltyScore" @save="saveKnockoutScore" />
               </div>
             </div>
           </div>

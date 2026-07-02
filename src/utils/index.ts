@@ -186,7 +186,9 @@ export function buildKnockoutTree(
   thirds: ThirdPlaceRank[],
 ) {
   const r32Pairings = resolveR32Matchups(standings, thirds)
-  const emptyState = (): KnockoutMatchState => ({ homeScore: '', awayScore: '', penaltyWinner: null })
+  const emptyState = (): KnockoutMatchState => ({
+    homeScore: '', awayScore: '', penaltyWinner: null, penaltyHomeScore: '', penaltyAwayScore: '',
+  })
 
   const r32Stadiums = [
     'Gillette Stadium, Boston', 'NRG Stadium, Houston', 'Estadio BBVA, Monterrey',
@@ -291,7 +293,7 @@ export function resolveKnockoutSlot(
   stadiumFull: string,
   time = '20:00',
 ): KnockoutSlot {
-  const { homeScore, awayScore, penaltyWinner } = scoreState
+  const { homeScore, awayScore, penaltyWinner, penaltyHomeScore, penaltyAwayScore } = scoreState
   let winner: string | undefined
   let loser: string | undefined
 
@@ -307,10 +309,24 @@ export function resolveKnockoutSlot(
   return {
     matchId, homeLabel, awayLabel,
     home: homeTeam, away: awayTeam,
-    homeScore, awayScore, penaltyWinner,
+    homeScore, awayScore, penaltyWinner, penaltyHomeScore, penaltyAwayScore,
     winner, loser,
     date, time,
     stadium: stadiumFull.split(', ')[0],
     stadiumCity: stadiumFull.split(', ')[1],
   }
+}
+
+export function simulatePenaltyShootout(): { homeScore: number; awayScore: number; winner: 'home' | 'away' } {
+  const winner: 'home' | 'away' = Math.random() > 0.5 ? 'home' : 'away'
+  let winnerGoals = Math.floor(Math.random() * 3) + 3
+  let loserGoals = Math.floor(Math.random() * winnerGoals)
+  if (Math.random() < 0.15) {
+    const base = Math.floor(Math.random() * 3) + 5
+    winnerGoals = base + 1
+    loserGoals = base
+  }
+  return winner === 'home'
+    ? { homeScore: winnerGoals, awayScore: loserGoals, winner }
+    : { homeScore: loserGoals, awayScore: winnerGoals, winner }
 }

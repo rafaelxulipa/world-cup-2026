@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { KnockoutSlot } from '../types'
 import { TEAMS } from '../data/constants'
 import TeamFlag from './TeamFlag.vue'
-import { Save } from '@lucide/vue'
+import { Save, Pencil } from '@lucide/vue'
 
 const props = withDefaults(defineProps<{
   match: KnockoutSlot
@@ -19,6 +19,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   scoreChange: [id: string, side: 'homeScore' | 'awayScore', value: string]
   setPenalty: [id: string, side: 'home' | 'away']
+  penaltyScoreChange: [id: string, side: 'penaltyHomeScore' | 'penaltyAwayScore', value: string]
   save: [id: string]
 }>()
 
@@ -27,6 +28,21 @@ const isTied = computed(() =>
   props.match.awayScore !== '' &&
   props.match.homeScore === props.match.awayScore,
 )
+
+const hasPenaltyScore = computed(() =>
+  typeof props.match.penaltyHomeScore === 'number' && typeof props.match.penaltyAwayScore === 'number',
+)
+
+const editingPenalty = ref(false)
+
+watch(() => props.isUnsaved, (isUnsaved, wasUnsaved) => {
+  if (wasUnsaved && !isUnsaved) editingPenalty.value = false
+})
+
+const showPenaltyInputs = computed(() =>
+  !props.readOnly && isTied.value && (editingPenalty.value || props.isUnsaved || !hasPenaltyScore.value),
+)
+const showPenaltyDisplay = computed(() => isTied.value && hasPenaltyScore.value && !showPenaltyInputs.value)
 
 const borderClass = computed(() =>
   props.isEmphasized
@@ -137,12 +153,64 @@ function awayAriaLabel() {
       </div>
     </div>
 
+    <!-- Penalty score display -->
+    <div
+      v-if="showPenaltyDisplay"
+      class="mt-3.5 pt-2.5 border-t border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide"
+    >
+      <span class="mr-0.5 normal-case tracking-normal">Pênaltis</span>
+      <TeamFlag :code="match.home || ''" :hide-name="true" flag-class="text-xs" />
+      <span>{{ match.penaltyHomeScore }}</span>
+      <span class="text-slate-400">×</span>
+      <span>{{ match.penaltyAwayScore }}</span>
+      <TeamFlag :code="match.away || ''" :hide-name="true" flag-class="text-xs" />
+      <button
+        v-if="!readOnly"
+        type="button"
+        @click="editingPenalty = true"
+        class="ml-1 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer shrink-0"
+        title="Editar placar dos pênaltis"
+        aria-label="Editar placar dos pênaltis"
+      >
+        <Pencil class="w-2.5 h-2.5" :stroke-width="2.5" aria-hidden="true" />
+      </button>
+    </div>
+
+    <!-- Penalty score input -->
+    <div
+      v-if="showPenaltyInputs"
+      class="mt-3.5 pt-2.5 border-t border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5"
+    >
+      <span class="text-[9px] font-bold uppercase text-slate-400 tracking-wide mr-0.5">Pênaltis</span>
+      <TeamFlag :code="match.home || ''" :hide-name="true" flag-class="text-xs" />
+      <input
+        type="number"
+        min="0"
+        :value="match.penaltyHomeScore"
+        @input="(e: Event) => emit('penaltyScoreChange', match.matchId, 'penaltyHomeScore', (e.target as HTMLInputElement).value)"
+        :aria-label="`Pênaltis ${match.home ? (TEAMS[match.home]?.name || match.home) : 'mandante'}`"
+        placeholder="-"
+        class="w-7 h-6 text-center font-mono font-black text-[11px] rounded bg-slate-100 dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+      />
+      <span class="text-[9px] text-slate-400">×</span>
+      <input
+        type="number"
+        min="0"
+        :value="match.penaltyAwayScore"
+        @input="(e: Event) => emit('penaltyScoreChange', match.matchId, 'penaltyAwayScore', (e.target as HTMLInputElement).value)"
+        :aria-label="`Pênaltis ${match.away ? (TEAMS[match.away]?.name || match.away) : 'visitante'}`"
+        placeholder="-"
+        class="w-7 h-6 text-center font-mono font-black text-[11px] rounded bg-slate-100 dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-yellow-500"
+      />
+      <TeamFlag :code="match.away || ''" :hide-name="true" flag-class="text-xs" />
+    </div>
+
     <!-- Penalty prompt -->
     <div
       v-if="isTied && !match.penaltyWinner"
       class="mt-3.5 pt-2.5 border-t border-dashed border-red-500/20 text-[9px] text-red-500 dark:text-red-400 font-bold uppercase text-center animate-pulse tracking-wide"
     >
-      ⚠️ Toque na bandeira para decidir pênaltis
+      ⚠️ Toque na bandeira ou informe o placar dos pênaltis
     </div>
 
     <!-- Footer date/time -->
